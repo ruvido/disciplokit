@@ -1,0 +1,14 @@
+#!/bin/bash
+
+case "$1" in
+    "clean")
+        echo "🧹 Cleaning pb_data and starting fresh..."
+        rm -rf pb_data
+        ;;
+    *)
+        echo "🚀 Starting with existing data..."
+        ;;
+esac
+
+export $(cat .env | xargs)
+./pocketbase serve
