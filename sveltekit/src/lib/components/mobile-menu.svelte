@@ -74,10 +74,13 @@
 <div class="md:hidden">
 	<!-- Overlay -->
 	{#if isOpen}
-		<div 
+		<button 
 			class="fixed inset-0 bg-black/20 z-40"
 			onclick={closeMenu}
-		></div>
+			onkeydown={(e) => e.key === 'Escape' && closeMenu()}
+			aria-label="Close menu overlay"
+			tabindex="0"
+		></button>
 	{/if}
 
 	<!-- Slide-out Menu -->

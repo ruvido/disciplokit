@@ -1,17 +1,17 @@
-// Set default role for new users
+// Set default role for new members
 onRecordCreate((e) => {
-    // Set default role to "user" if not specified
+    // Set default role to "member" if not specified
     if (!e.record.get("role")) {
-        e.record.set("role", "user")
+        e.record.set("role", "member")
     }
     e.next()
-}, "users")
+}, "members")
 
 // Validate role values on update
 onRecordUpdate((e) => {
     const role = e.record.get("role")
-    if (role && !["admin", "moderator", "user"].includes(role)) {
-        throw new BadRequestError("Invalid role value. Must be 'admin', 'moderator', or 'user'")
+    if (role && !["admin", "moderator", "member"].includes(role)) {
+        throw new BadRequestError("Invalid role value. Must be 'admin', 'moderator', or 'member'")
     }
     e.next()
-}, "users")
+}, "members")

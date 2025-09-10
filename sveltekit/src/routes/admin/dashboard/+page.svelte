@@ -4,6 +4,8 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { enhance } from '$app/forms';
 	import MobileMenu from "$lib/components/mobile-menu.svelte";
+	import LoadingSpinner from "$lib/components/loading-spinner.svelte";
+	import ErrorBoundary from "$lib/components/error-boundary.svelte";
 	import { page } from '$app/stores';
 	
 	interface Props {
@@ -15,6 +17,7 @@
 	
 	let deletingUserId = $state<string | null>(null);
 	let updatingRoleUserId = $state<string | null>(null);
+	let isLoading = $state(false);
 	
 	const adminMenuItems = [
 		{ href: '/dashboard/profile', label: 'Profile' },
@@ -31,7 +34,11 @@
 	
 	<div class="container mx-auto p-4 max-w-4xl">
 	
-	<div class="grid gap-6 mb-8 md:grid-cols-2">
+	<ErrorBoundary error={form?.error as string | null}>
+		{#if isLoading}
+			<LoadingSpinner message="Loading dashboard..." />
+		{:else}
+			<div class="grid gap-6 mb-8 md:grid-cols-2">
 		<Card.Root>
 			<Card.Header class="pb-3">
 				<Card.Title class="text-base">User Statistics</Card.Title>
@@ -210,5 +217,7 @@
 			</div>
 		</Card.Content>
 	</Card.Root>
+		{/if}
+	</ErrorBoundary>
 	</div>
 </div>

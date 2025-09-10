@@ -4,12 +4,13 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { enhance } from '$app/forms';
+	import ErrorBoundary from "$lib/components/error-boundary.svelte";
 	
 	interface Props {
 		form?: {
 			error?: string;
 			email?: string;
-		};
+		} | null;
 	}
 	
 	let { form }: Props = $props();
@@ -35,9 +36,7 @@
 				};
 			}}
 		>
-			{#if form?.error}
-				<div class="text-sm text-red-500">{form.error}</div>
-			{/if}
+			<ErrorBoundary error={form?.error} showRetry={false} />
 			<div class="grid gap-2">
 				<Label for="email-{id}">Email</Label>
 				<Input 

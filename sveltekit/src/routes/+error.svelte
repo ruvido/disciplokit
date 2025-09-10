@@ -25,9 +25,6 @@
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			{#if $page.error?.hint}
-				<p class="mb-4 text-sm text-muted-foreground">{$page.error.hint}</p>
-			{/if}
 			<div class="flex gap-4">
 				<Button href="/" variant="outline">Go Home</Button>
 				<Button href="/dashboard">Go to Dashboard</Button>

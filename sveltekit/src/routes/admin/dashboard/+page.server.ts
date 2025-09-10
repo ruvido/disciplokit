@@ -1,83 +1,82 @@
-import { redirect, error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import { requireAdmin } from '$lib/server/auth-guards';
+import { handlePocketBaseError, validateRequired, successResponse, ERROR_MESSAGES } from '$lib/server/error-handler';
 
-export const load: PageServerLoad = async ({ locals }) => {
-    // Check if user is logged in
-    if (!locals.user) {
-        throw redirect(303, '/login');
-    }
-
-    // Check if user is admin
-    if (locals.user.role !== 'admin') {
-        throw error(403, {
-            message: 'Access Denied',
-            hint: 'You do not have permission to access this page.'
-        });
-    }
+export const load: PageServerLoad = async (event) => {
+    const user = requireAdmin(event);
 
     // Get all members for admin view
     try {
-        const members = await locals.pb.collection('members').getList(1, 50);
+        const members = await event.locals.pb.collection('members').getList(1, 50);
 
         return {
-            user: locals.user,
+            user: user,
             members: members.items
         };
     } catch (err) {
         console.error('Error fetching members:', err);
         return {
-            user: locals.user,
+            user: user,
             members: []
         };
     }
 };
 
 export const actions: Actions = {
-    updateRole: async ({ request, locals }) => {
-        if (!locals.user || locals.user.role !== 'admin') {
-            return fail(403, { error: 'Not authorized' });
-        }
+    updateRole: async (event) => {
+        requireAdmin(event);
+        
+        const { request, locals } = event;
 
         const formData = await request.formData();
-        const userId = formData.get('userId') as string;
-        const newRole = formData.get('role') as string;
+        const data = {
+            userId: formData.get('userId'),
+            role: formData.get('role')
+        };
 
-        if (!userId || !newRole || !['member', 'moderator', 'admin'].includes(newRole)) {
-            return fail(400, { error: 'Invalid data' });
+        // Validate required fields
+        const validation = validateRequired(data, ['userId', 'role']);
+        if ('error' in validation) return validation;
+
+        const { userId, role } = data as { userId: string; role: string };
+
+        // Validate role value
+        if (!['member', 'moderator', 'admin'].includes(role)) {
+            return handlePocketBaseError({ status: 400 });
         }
 
         try {
-            await locals.pb.collection('members').update(userId, { role: newRole });
-            return { success: true, message: 'Role updated successfully' };
+            await locals.pb.collection('members').update(userId, { role });
+            return successResponse('Role updated successfully');
         } catch (err: any) {
-            console.error('Error updating role:', err);
-            return fail(500, { error: 'Failed to update role' });
+            return handlePocketBaseError(err);
         }
     },
 
-    deleteUser: async ({ request, locals }) => {
-        if (!locals.user || locals.user.role !== 'admin') {
-            return fail(403, { error: 'Not authorized' });
-        }
+    deleteUser: async (event) => {
+        const user = requireAdmin(event);
+        
+        const { request, locals } = event;
 
         const formData = await request.formData();
-        const userId = formData.get('userId') as string;
+        const data = { userId: formData.get('userId') };
 
-        if (!userId) {
-            return fail(400, { error: 'User ID required' });
-        }
+        // Validate required fields
+        const validation = validateRequired(data, ['userId']);
+        if ('error' in validation) return validation;
+
+        const { userId } = data as { userId: string };
 
         // Prevent admin from deleting themselves
-        if (userId === locals.user.id) {
-            return fail(400, { error: 'Cannot delete your own account' });
+        if (userId === user.id) {
+            return handlePocketBaseError({ status: 400 });
         }
 
         try {
             await locals.pb.collection('members').delete(userId);
-            return { success: true, message: 'User deleted successfully' };
+            return successResponse('User deleted successfully');
         } catch (err: any) {
-            console.error('Error deleting user:', err);
-            return fail(500, { error: 'Failed to delete user' });
+            return handlePocketBaseError(err);
         }
     }
 };

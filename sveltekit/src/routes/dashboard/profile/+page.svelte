@@ -3,6 +3,8 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import MobileMenu from "$lib/components/mobile-menu.svelte";
+	import LoadingSpinner from "$lib/components/loading-spinner.svelte";
+	import ErrorBoundary from "$lib/components/error-boundary.svelte";
 	import { page } from '$app/stores';
 	
 	interface Props {
@@ -10,6 +12,7 @@
 	}
 	
 	let { data }: Props = $props();
+	let isLoading = $state(false);
 	
 	// Menu items based on user role
 	const menuItems = data.user?.role === 'admin' 
@@ -45,6 +48,10 @@
 	/>
 	
 	<div class="container mx-auto p-4 max-w-2xl space-y-6">
+		{#snippet errorBoundaryContent()}
+			{#if isLoading}
+				<LoadingSpinner message="Loading profile..." />
+			{:else}
 		<!-- Profile Header -->
 		<div class="text-center space-y-4">
 			<div class="mx-auto h-20 w-20 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold">
@@ -147,5 +154,9 @@
 				{/if}
 			</Card.Content>
 		</Card.Root>
+			{/if}
+		{/snippet}
+
+		<ErrorBoundary error={null} children={errorBoundaryContent}></ErrorBoundary>
 	</div>
 </div>
