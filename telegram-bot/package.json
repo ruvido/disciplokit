@@ -1,0 +1,17 @@
+{
+  "name": "disciplo-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for Disciplo membership platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "telegraf": "^4.15.6",
+    "pocketbase": "^0.21.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
