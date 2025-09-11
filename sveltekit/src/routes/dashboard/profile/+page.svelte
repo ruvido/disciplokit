@@ -13,6 +13,30 @@
 	
 	let { data }: Props = $props();
 	let isLoading = $state(false);
+	let isGeneratingLink = $state(false);
+	
+	// Check if user has telegram linked
+	const isTelegramLinked = $derived(!!data.user?.telegram_id);
+	const telegramData = $derived(data.user?.data ? JSON.parse(data.user.data) : null);
+	
+	// Generate telegram link
+	async function generateTelegramLink() {
+		isGeneratingLink = true;
+		try {
+			const response = await fetch('/api/telegram-link', { method: 'POST' });
+			const result = await response.json();
+			
+			if (result.success) {
+				window.open(result.link, '_blank');
+			} else {
+				alert('Errore nella generazione del link: ' + result.error);
+			}
+		} catch (error) {
+			alert('Errore di connessione');
+		} finally {
+			isGeneratingLink = false;
+		}
+	}
 	
 	// Menu items based on user role
 	const menuItems = data.user?.role === 'admin' 
@@ -104,6 +128,77 @@
 				</Card.Content>
 			</Card.Root>
 		</div>
+
+		<!-- Telegram Integration -->
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<span class="text-lg">📱</span>
+					Integrazione Telegram
+				</Card.Title>
+				<Card.Description>
+					{isTelegramLinked 
+						? 'Il tuo account è collegato a Telegram' 
+						: 'Collega il tuo account Telegram per accedere ai gruppi della community'
+					}
+				</Card.Description>
+			</Card.Header>
+			<Card.Content class="space-y-4">
+				{#if isTelegramLinked}
+					<!-- Already linked -->
+					<div class="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+						<div class="flex items-center gap-3">
+							<div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+								<span class="text-green-600 font-semibold">✓</span>
+							</div>
+							<div>
+								<div class="font-medium text-green-800">
+									{data.user?.telegram_name || 'Telegram User'}
+								</div>
+								<div class="text-sm text-green-600">
+									Collegato il {telegramData?.linked_at ? formatDate(telegramData.linked_at) : 'N/A'}
+								</div>
+								{#if telegramData?.username}
+									<div class="text-xs text-green-500">@{telegramData.username}</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+					
+					<div class="text-sm text-muted-foreground p-3 bg-muted rounded-lg">
+						<strong>✅ Account collegato!</strong><br>
+						Ora puoi iscriverti ai gruppi Telegram disponibili dalla sezione Groups.
+					</div>
+				{:else}
+					<!-- Not linked yet -->
+					<div class="space-y-3">
+						<div class="text-sm text-muted-foreground">
+							<strong>Come funziona:</strong>
+						</div>
+						<ol class="text-sm text-muted-foreground space-y-1 ml-4">
+							<li>1. Clicca su "Collega Telegram"</li>
+							<li>2. Si aprirà automaticamente Telegram</li>
+							<li>3. Il bot confermerà il collegamento</li>
+							<li>4. Torna qui per iscriverti ai gruppi</li>
+						</ol>
+						
+						<Button 
+							onclick={generateTelegramLink}
+							disabled={isGeneratingLink}
+							class="w-full"
+						>
+							{#if isGeneratingLink}
+								<LoadingSpinner message="" />
+								<span class="ml-2">Generando link...</span>
+							{:else}
+								<span class="mr-2">📱</span>
+								Collega Telegram
+							{/if}
+						</Button>
+					</div>
+				{/if}
+			</Card.Content>
+		</Card.Root>
 
 		<!-- Account Details -->
 		<Card.Root>

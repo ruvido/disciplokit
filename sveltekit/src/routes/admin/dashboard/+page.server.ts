@@ -1,14 +1,19 @@
 import type { PageServerLoad, Actions } from './$types';
 import { requireAdmin } from '$lib/server/auth-guards';
-import { handlePocketBaseError, validateRequired, successResponse, ERROR_MESSAGES } from '$lib/server/error-handler';
+import { handlePocketBaseError, validateRequired, successResponse } from '$lib/server/error-handler';
+import { getEnhancedClient } from '$lib/server/pocketbase-client';
+import { sanitizeFormData, isValidRole } from '$lib/server/input-sanitizer';
 
 export const load: PageServerLoad = async (event) => {
     const user = requireAdmin(event);
+    const client = getEnhancedClient(event);
 
-    // Get all members for admin view
+    // Get all members for admin view with fast timeout
     try {
-        const members = await event.locals.pb.collection('members').getList(1, 50);
-
+        const members = await client.getList('members', 1, 50, { 
+            context: 'dashboard',
+            timeoutMs: 3000 
+        });
         return {
             user: user,
             members: members.items
@@ -17,7 +22,8 @@ export const load: PageServerLoad = async (event) => {
         console.error('Error fetching members:', err);
         return {
             user: user,
-            members: []
+            members: [],
+            loadError: 'Impossibile caricare la lista dei membri.'
         };
     }
 };
@@ -25,58 +31,68 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
     updateRole: async (event) => {
         requireAdmin(event);
-        
-        const { request, locals } = event;
+        const client = getEnhancedClient(event);
+        const { request } = event;
 
         const formData = await request.formData();
-        const data = {
+        const rawData = {
             userId: formData.get('userId'),
             role: formData.get('role')
         };
 
         // Validate required fields
-        const validation = validateRequired(data, ['userId', 'role']);
+        const validation = validateRequired(rawData, ['userId', 'role']);
         if ('error' in validation) return validation;
 
-        const { userId, role } = data as { userId: string; role: string };
+        // Sanitize input data
+        const sanitized = sanitizeFormData(rawData);
+        const { userId, role } = sanitized;
 
         // Validate role value
-        if (!['member', 'moderator', 'admin'].includes(role)) {
-            return handlePocketBaseError({ status: 400 });
+        if (!isValidRole(role)) {
+            return handlePocketBaseError({ status: 400 }, 'updateRole');
         }
 
         try {
-            await locals.pb.collection('members').update(userId, { role });
-            return successResponse('Role updated successfully');
+            await client.update('members', userId, { role }, { 
+                context: 'update',
+                timeoutMs: 5000 
+            });
+            return successResponse('Ruolo aggiornato con successo');
         } catch (err: any) {
-            return handlePocketBaseError(err);
+            return handlePocketBaseError(err, 'updateRole');
         }
     },
 
     deleteUser: async (event) => {
         const user = requireAdmin(event);
-        
-        const { request, locals } = event;
+        const client = getEnhancedClient(event);
+        const { request } = event;
 
         const formData = await request.formData();
-        const data = { userId: formData.get('userId') };
+        const rawData = { userId: formData.get('userId') };
 
         // Validate required fields
-        const validation = validateRequired(data, ['userId']);
+        const validation = validateRequired(rawData, ['userId']);
         if ('error' in validation) return validation;
 
-        const { userId } = data as { userId: string };
+        // Sanitize input data
+        const sanitized = sanitizeFormData(rawData);
+        const { userId } = sanitized;
 
         // Prevent admin from deleting themselves
         if (userId === user.id) {
-            return handlePocketBaseError({ status: 400 });
+            return handlePocketBaseError({ status: 400 }, 'deleteUser - self delete attempt');
         }
 
         try {
-            await locals.pb.collection('members').delete(userId);
-            return successResponse('User deleted successfully');
+            await client.delete('members', userId, { 
+                context: 'delete',
+                timeoutMs: 5000 
+            });
+            return successResponse('Utente eliminato con successo');
         } catch (err: any) {
-            return handlePocketBaseError(err);
+            return handlePocketBaseError(err, 'deleteUser');
         }
     }
 };

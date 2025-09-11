@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { requireGuest } from '$lib/server/auth-guards';
-import { validateRequired, ERROR_MESSAGES } from '$lib/server/error-handler';
+import { validateRequired, handlePocketBaseError, ERROR_MESSAGES } from '$lib/server/error-handler';
 import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async (event) => {
@@ -26,11 +26,24 @@ export const actions: Actions = {
         try {
             await locals.pb.collection('members').authWithPassword(email, password);
         } catch (err: any) {
-            console.error('Login error:', err);
-            return fail(400, {
-                error: ERROR_MESSAGES.INVALID_CREDENTIALS,
-                email
-            });
+            // Check for connection errors first (no status code)
+            if (!err?.status) {
+                return fail(503, {
+                    error: ERROR_MESSAGES.CONNECTION_ERROR,
+                    email
+                });
+            }
+            
+            // If it's a 401/403 authentication error, show invalid credentials
+            if (err.status === 400 || err.status === 401) {
+                return fail(400, {
+                    error: ERROR_MESSAGES.INVALID_CREDENTIALS,
+                    email
+                });
+            }
+            
+            // For other errors, use the proper error handler
+            return handlePocketBaseError(err, 'Login attempt');
         }
 
         // Redirect based on user role

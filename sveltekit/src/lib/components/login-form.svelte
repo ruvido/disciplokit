@@ -4,7 +4,6 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { enhance } from '$app/forms';
-	import ErrorBoundary from "$lib/components/error-boundary.svelte";
 	
 	interface Props {
 		form?: {
@@ -36,7 +35,11 @@
 				};
 			}}
 		>
-			<ErrorBoundary error={form?.error} showRetry={false} />
+			{#if form?.error}
+				<div class="bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
+					<p class="text-sm text-destructive">{form.error}</p>
+				</div>
+			{/if}
 			<div class="grid gap-2">
 				<Label for="email-{id}">Email</Label>
 				<Input 
@@ -67,7 +70,7 @@
 				/>
 			</div>
 			<Button type="submit" class="w-full" disabled={loading}>
-				{loading ? 'Logging in...' : 'Login'}
+				{loading ? 'Accesso in corso...' : 'Accedi'}
 			</Button>
 			<Button variant="outline" class="w-full" type="button">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
