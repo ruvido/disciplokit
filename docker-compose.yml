@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  pocketbase:
+    image: pocketbase/pocketbase:latest
+    container_name: disciplo-pocketbase
+    restart: unless-stopped
+    command: pocketbase serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./pocketbase:/pb_data
+      - ./pocketbase/pb_hooks:/pb_hooks
+      - ./pocketbase/pb_migrations:/pb_migrations
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    container_name: disciplo-telegram-bot
+    restart: unless-stopped
+    environment:
+      - HOST=pocketbase
+      - POCKETBASE_PORT=8090
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    volumes:
+      - ./telegram-bot:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./sveltekit
+      dockerfile: Dockerfile
+    container_name: disciplo-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - HOST=pocketbase
+      - POCKETBASE_PORT=8090
+    depends_on:
+      - pocketbase
+
+networks:
+  default:
+    name: disciplo-network
