@@ -10,5 +10,6 @@ case "$1" in
         ;;
 esac
 
-export $(cat .env | xargs)
+# Load env vars excluding comments and empty lines
+export $(grep -v '^#' ../.env | grep -v '^$' | xargs)
 ./pocketbase serve

@@ -39,6 +39,9 @@ Web App (SvelteKit) ←→ PocketBase API ←→ Bot Telegram
 ## Setup Sviluppo
 
 ```bash
+# Configurazione ambiente (file .env nel root del progetto)
+# Variabili condivise da tutti i componenti
+
 # Terminal 1: Backend
 cd pocketbase
 ./pocketbase serve --http=127.0.0.1:8090
@@ -53,6 +56,12 @@ cd sveltekit
 npm install
 npm run dev
 ```
+
+## Configurazione Ambiente
+File `.env` nel root del progetto condiviso da tutti i componenti:
+- **HOST/POCKETBASE_PORT**: Connessione PocketBase
+- **POCKETBASE_ADMIN_EMAIL/PASSWORD**: Credenziali admin
+- **TELEGRAM_LINK_SECRET**: Chiave per validazione token HMAC
 
 ## Deploy Produzione (VPS)
 ```bash

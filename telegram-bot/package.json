@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "telegraf": "^4.15.6",
-    "pocketbase": "^0.21.1"
+    "pocketbase": "^0.26.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2"
   },
   "engines": {
     "node": ">=16.0.0"

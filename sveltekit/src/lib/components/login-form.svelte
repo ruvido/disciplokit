@@ -83,8 +83,8 @@
 			</Button>
 		</form>
 		<div class="mt-4 text-center text-sm">
-			Don't have an account?
-			<a href="##" class="underline"> Sign up </a>
+			Non hai un account?
+			<a href="/signup" class="underline text-primary hover:text-primary/80"> Registrati qui </a>
 		</div>
 	</Card.Content>
 </Card.Root>

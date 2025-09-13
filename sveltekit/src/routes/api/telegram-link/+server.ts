@@ -5,8 +5,22 @@ import crypto from 'crypto';
 function generateLinkParam(userId: string, expiryDays: number = 7): string {
     const timestamp = Date.now();
     const expiry = timestamp + (expiryDays * 24 * 60 * 60 * 1000);
-    const hash = crypto.createHash('md5').update(`${userId}_${expiry}_disciplo_secret`).digest('hex').substring(0, 8);
-    return `${userId}_${expiry}_${hash}`;
+    
+    // Generate cryptographically secure random token
+    const randomBytes = crypto.randomBytes(16);
+    const token = randomBytes.toString('hex').substring(0, 12);
+    
+    // Create HMAC for integrity verification using secret from ENV
+    const secret = process.env.TELEGRAM_LINK_SECRET;
+    if (!secret) {
+        throw new Error('Bot secret not configured in environment');
+    }
+    
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(`${userId}_${expiry}_${token}`);
+    const signature = hmac.digest('hex').substring(0, 8);
+    
+    return `${userId}_${expiry}_${token}_${signature}`;
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -16,7 +30,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         }
 
         // Get bot config from settings
-        const botConfigRecord = await locals.pb.collection('settings').getFirstListItem('key = "telegram_bot"');
+        const botConfigRecord = await locals.pb.collection('settings').getFirstListItem(locals.pb.filter('key = {:key}', { key: 'telegram_bot' }));
         if (!botConfigRecord?.data?.token) {
             return json({ error: 'Bot not configured' }, { status: 500 });
         }
@@ -25,31 +39,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const botToken = botConfig.token;
         let botUsername = botConfig.name;
 
-        // If bot name not stored, fetch it and update
+        // If bot name not stored, return error - bot name should be pre-configured
         if (!botUsername) {
-            const botInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
-            const botInfo = await botInfoResponse.json();
-            
-            if (!botInfo.ok) {
-                return json({ error: 'Bot configuration error' }, { status: 500 });
-            }
-
-            botUsername = botInfo.result.username;
-            
-            // Update the record with bot name for future use
-            try {
-                await locals.pb.collection('settings').update(botConfigRecord.id, {
-                    data: { token: botToken, name: botUsername }
-                });
-            } catch (e) {
-                console.log('Failed to update bot name:', e);
-            }
+            return json({ error: 'Bot username not configured in settings' }, { status: 500 });
         }
 
         // Get link expiry days from settings
         let expiryDays = 7;
         try {
-            const expiryRecord = await locals.pb.collection('settings').getFirstListItem('key = "link_expiry_days"');
+            const expiryRecord = await locals.pb.collection('settings').getFirstListItem(locals.pb.filter('key = {:key}', { key: 'link_expiry_days' }));
             if (expiryRecord?.data) {
                 expiryDays = expiryRecord.data as number;
             }
@@ -59,7 +57,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         // Generate secure link parameter
         const linkParam = generateLinkParam(locals.user.id, expiryDays);
-        const telegramLink = `https://t.me/${botUsername}?start=${linkParam}`;
+        const telegramLink = `https://telegram.me/${botUsername}?start=${linkParam}`;
 
         return json({ 
             success: true, 

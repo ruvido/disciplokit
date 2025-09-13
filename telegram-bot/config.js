@@ -1,4 +1,4 @@
-const PocketBase = require('pocketbase');
+const PocketBase = require('pocketbase').default;
 
 class Config {
     constructor() {
@@ -17,8 +17,14 @@ class Config {
 
     async getTelegramBotConfig() {
         try {
-            const records = await this.pb.collection('config').getFullList({
-                filter: 'key = "telegram_bot"'
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            const records = await this.pb.collection('settings').getFullList({
+                filter: this.pb.filter('key = {:key}', { key: 'telegram_bot' })
             });
 
             if (records.length === 0) {
@@ -40,15 +46,51 @@ class Config {
         }
     }
 
-    async linkUserTelegram(memberId, telegramId, telegramUsername = null) {
+    async linkUserTelegram(linkParam, telegramId, telegramUsername = null) {
         try {
-            await this.pb.collection('members').update(memberId, {
-                telegram_id: telegramId.toString(),
-                telegram_username: telegramUsername
+            const host = process.env.HOST;
+            const port = process.env.POCKETBASE_PORT;
+            const endpoint = process.env.POCKETBASE_LINK_ENDPOINT;
+            
+            if (!host || !port || !endpoint) {
+                console.error('❌ Missing PocketBase configuration');
+                return false;
+            }
+            
+            const url = `http://${host}:${port}${endpoint}`;
+            
+            // Prepare request data
+            const requestData = {
+                linkParam: linkParam, // Full token with signature
+                telegramId: telegramId.toString()
+            };
+            
+            if (telegramUsername) {
+                requestData.telegramUsername = telegramUsername;
+            }
+            
+            console.log(`🔗 Calling PocketBase API: ${url}`);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
             });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('❌ PocketBase API error:', error);
+                return false;
+            }
+            
+            const result = await response.json();
+            console.log('✅ PocketBase API success:', result);
             return true;
+            
         } catch (error) {
-            console.error('Error linking user to Telegram:', error);
+            console.error('❌ Error calling PocketBase API:', error);
             return false;
         }
     }
@@ -56,7 +98,7 @@ class Config {
     async syncTelegramGroup(groupInfo) {
         try {
             const existingGroups = await this.pb.collection('groups').getFullList({
-                filter: `telegram_id = "${groupInfo.id}"`
+                filter: this.pb.filter('telegram_id = {:telegramId}', { telegramId: groupInfo.id.toString() })
             });
 
             if (existingGroups.length > 0) {

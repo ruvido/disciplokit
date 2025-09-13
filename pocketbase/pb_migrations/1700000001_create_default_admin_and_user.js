@@ -1,10 +1,10 @@
 migrate((app) => {
-    const adminEmail = $os.getenv("ADMIN_EMAIL")
-    const adminPassword = $os.getenv("ADMIN_PASSWORD")
+    const adminEmail = $os.getenv("POCKETBASE_ADMIN_EMAIL")
+    const adminPassword = $os.getenv("POCKETBASE_ADMIN_PASSWORD")
     
     // Only create admin if both email and password are provided
     if (!adminEmail || !adminPassword) {
-        console.log("Skipping admin creation - ADMIN_EMAIL or ADMIN_PASSWORD not set")
+        console.log("Skipping admin creation - POCKETBASE_ADMIN_EMAIL or POCKETBASE_ADMIN_PASSWORD not set")
         return
     }
     
@@ -23,6 +23,7 @@ migrate((app) => {
     const mrecord = new Record(members)
     mrecord.set("email", adminEmail)
     mrecord.set("password", adminPassword)
+    mrecord.set("emailVisibility", true)
     mrecord.set("role", "admin")
     app.save(mrecord)
 })

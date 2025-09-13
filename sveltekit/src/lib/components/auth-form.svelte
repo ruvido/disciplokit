@@ -33,22 +33,26 @@
 
 	// Enhanced form submission with client-side validation
 	function handleSubmit(event: Event) {
+		console.log('🚀 Form submission started for:', type);
 		const form = event.target as HTMLFormElement;
 		const formData = new FormData(form);
 		
 		const emailValue = formData.get('email')?.toString() || '';
 		const passwordValue = formData.get('password')?.toString() || '';
+		console.log('📝 Form data:', { email: emailValue, password: passwordValue ? '[PROVIDED]' : '[MISSING]' });
 
 		// Pre-validate on client
 		const emailError = validateEmail(emailValue);
 		const passwordError = validatePassword(passwordValue);
 
 		if (emailError || passwordError) {
+			console.log('❌ Client validation failed:', emailError || passwordError);
 			clientError = emailError || passwordError || '';
 			event.preventDefault();
 			return;
 		}
 
+		console.log('✅ Client validation passed, submitting...');
 		clientError = '';
 		isSubmitting = true;
 	}
@@ -59,7 +63,9 @@
 	class="space-y-4" 
 	onsubmit={handleSubmit}
 	use:enhance={() => {
+		console.log('🔄 SvelteKit enhance activated');
 		return async ({ update, result }) => {
+			console.log('📨 Server response received:', result);
 			isSubmitting = false;
 			await update();
 		};

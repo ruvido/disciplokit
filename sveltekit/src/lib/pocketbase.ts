@@ -1,7 +1,18 @@
 import PocketBase from 'pocketbase';
-import { PUBLIC_POCKETBASE_URL } from '$env/static/public';
 
-export const pb = new PocketBase(PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+// Construct URL from existing env vars
+const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const port = '8090';
+const pocketbaseUrl = `http://${host}:${port}`;
+
+console.log('🔗 PocketBase client initialized:', {
+    isServer: typeof window === 'undefined',
+    host,
+    port,
+    finalUrl: pocketbaseUrl
+});
+
+export const pb = new PocketBase(pocketbaseUrl);
 
 pb.authStore.onChange(() => {
     if (typeof window !== 'undefined') {
