@@ -21,6 +21,7 @@
 	
 	const adminMenuItems = [
 		{ href: '/dashboard/profile', label: 'Profile' },
+		{ href: '/dashboard/groups', label: 'Groups' },
 		{ href: '/admin/dashboard', label: 'Members' }
 	];
 </script>

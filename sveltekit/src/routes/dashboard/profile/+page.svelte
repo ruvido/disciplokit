@@ -42,10 +42,12 @@
 	const menuItems = data.user?.role === 'admin' 
 		? [
 			{ href: '/dashboard/profile', label: 'Profile' },
+			{ href: '/dashboard/groups', label: 'Groups' },
 			{ href: '/admin/dashboard', label: 'Members' }
 		]
 		: [
-			{ href: '/dashboard/profile', label: 'Profile' }
+			{ href: '/dashboard/profile', label: 'Profile' },
+			{ href: '/dashboard/groups', label: 'Groups' }
 		];
 	
 	// Format date helper
