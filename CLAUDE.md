@@ -74,3 +74,4 @@ docker-compose up -d
 - `/api/collections/config/records` - Configurazione bot
 
 Sistema simile a MightyNetworks/Circle ma specifico per Telegram.
+- MAI hardcoded variables!

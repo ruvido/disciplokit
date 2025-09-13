@@ -15,6 +15,7 @@ class Config {
         console.log(`🔗 Connecting to PocketBase at: ${pocketbaseUrl}`);
     }
 
+
     async getTelegramBotConfig() {
         try {
             // Authenticate as admin first
@@ -97,29 +98,56 @@ class Config {
 
     async syncTelegramGroup(groupInfo) {
         try {
-            const existingGroups = await this.pb.collection('groups').getFullList({
-                filter: this.pb.filter('telegram_id = {:telegramId}', { telegramId: groupInfo.id.toString() })
-            });
-
-            if (existingGroups.length > 0) {
-                // Update existing group
-                await this.pb.collection('groups').update(existingGroups[0].id, {
-                    name: groupInfo.title,
-                    description: groupInfo.description || '',
-                    type: groupInfo.type || 'default'
-                });
-            } else {
-                // Create new group
-                await this.pb.collection('groups').create({
-                    telegram_id: groupInfo.id.toString(),
-                    name: groupInfo.title,
-                    description: groupInfo.description || '',
-                    type: groupInfo.type || 'default'
-                });
+            const host = process.env.HOST;
+            const port = process.env.POCKETBASE_PORT;
+            const endpoint = process.env.POCKETBASE_SYNC_GROUP_ENDPOINT;
+            const secret = process.env.TELEGRAM_LINK_SECRET;
+            
+            if (!host || !port || !endpoint || !secret) {
+                console.error('❌ Missing PocketBase sync group configuration');
+                return false;
             }
+            
+            const url = `http://${host}:${port}${endpoint}`;
+            
+            // Generate HMAC token for security (same as telegram linking)
+            const timestamp = Date.now();
+            const data = `${groupInfo.id}_${timestamp}`;
+            const crypto = require('crypto');
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(data);
+            const syncToken = hmac.digest('hex').substring(0, 16);
+            
+            // Prepare request data
+            const requestData = {
+                telegram_id: groupInfo.id.toString(),
+                name: groupInfo.title,
+                timestamp: timestamp // Include timestamp for validation
+            };
+            
+            console.log(`🔗 Calling PocketBase sync group API: ${url}`);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Sync-Token': syncToken
+                },
+                body: JSON.stringify(requestData)
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('❌ PocketBase sync group API error:', error);
+                return false;
+            }
+            
+            const result = await response.json();
+            console.log('✅ PocketBase sync group API success:', result);
             return true;
+            
         } catch (error) {
-            console.error('Error syncing Telegram group:', error);
+            console.error('❌ Error calling PocketBase sync group API:', error);
             return false;
         }
     }
