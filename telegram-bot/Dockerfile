@@ -1,24 +1,18 @@
-FROM node:18-alpine
+FROM oven/bun:latest
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json bun.lockb* ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN bun install --production
 
 # Copy source code
 COPY . .
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S disciplo -u 1001
-
-USER disciplo
-
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "console.log('Bot is running')" || exit 1
+  CMD bun --version || exit 1
 
-CMD ["npm", "start"]
+CMD ["bun", "start"]

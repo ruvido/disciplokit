@@ -1,9 +1,14 @@
 import PocketBase from 'pocketbase';
 
-// Construct URL from existing env vars
-const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const port = '8090';
-const pocketbaseUrl = `http://${host}:${port}`;
+// Get PocketBase URL from environment variables
+const host = process.env.HOST || 'localhost';
+const port = process.env.POCKETBASE_PORT || '8090';
+const domain = process.env.POCKETBASE_DOMAIN;
+
+// Client-side: use HTTPS domain, Server-side: use internal host:port
+const pocketbaseUrl = typeof window !== 'undefined' && domain
+  ? `https://${domain}`
+  : `http://${host}:${port}`;
 
 console.log('🔗 PocketBase client initialized:', {
     isServer: typeof window === 'undefined',

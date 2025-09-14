@@ -1,15 +1,17 @@
-version: '3.8'
-
 services:
   pocketbase:
-    image: pocketbase/pocketbase:latest
+    build:
+      context: ./pocketbase
+      dockerfile: Dockerfile
     container_name: disciplo-pocketbase
     restart: unless-stopped
-    command: pocketbase serve --http=0.0.0.0:8090 --dir=/pb_data --publicDir=/pb_public
+    user: "1000:1000"
     ports:
       - "8090:8090"
+    env_file:
+      - .env
     volumes:
-      - ./pocketbase:/pb_data
+      - ./pocketbase/pb_data:/pb_data
       - ./pocketbase/pb_hooks:/pb_hooks
       - ./pocketbase/pb_migrations:/pb_migrations
     healthcheck:
@@ -24,6 +26,8 @@ services:
       dockerfile: Dockerfile
     container_name: disciplo-telegram-bot
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - HOST=pocketbase
       - POCKETBASE_PORT=8090
@@ -41,7 +45,9 @@ services:
     container_name: disciplo-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "5173:5173"
+    env_file:
+      - .env
     environment:
       - HOST=pocketbase
       - POCKETBASE_PORT=8090

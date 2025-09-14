@@ -51,27 +51,40 @@ export const actions: Actions = {
         }
 
         try {
-            // Get current group
-            const group = await locals.pb.collection('groups').getOne(groupId);
-            const currentMembers = group.members || [];
-
-            // Check if already member
-            if (currentMembers.includes(locals.user.id)) {
-                return fail(400, { error: 'Already a member of this group' });
-            }
-
-            // Add user to members array
-            const updatedMembers = [...currentMembers, locals.user.id];
-
-            await locals.pb.collection('groups').update(groupId, {
-                members: updatedMembers
+            // Call PocketBase hook API (server-side)
+            const hookUrl = `${locals.pb.baseURL}/api/custom/create-invite-link`;
+            
+            const response = await fetch(hookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    groupId: groupId,
+                    userId: locals.user.id
+                })
             });
 
-            return { success: true, message: 'Successfully joined group' };
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                return fail(response.status, { error: errorData.error || 'Failed to create invite link' });
+            }
+
+            const result = await response.json();
+            
+            if (!result.success || !result.invite_link) {
+                return fail(500, { error: 'Invalid hook response' });
+            }
+
+            return { 
+                success: true, 
+                message: 'Invite link created successfully',
+                invite_link: result.invite_link
+            };
 
         } catch (error) {
-            console.error('Error joining group:', error);
-            return fail(500, { error: 'Failed to join group' });
+            console.error('Error creating invite link:', error);
+            return fail(500, { error: 'Failed to create invite link' });
         }
     },
 

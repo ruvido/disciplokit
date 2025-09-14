@@ -13,6 +13,13 @@
 	let { data, form }: Props = $props();
 	let loading = $state<string | null>(null);
 
+	// Open invite link when form succeeds
+	$effect(() => {
+		if (form?.success && form?.invite_link) {
+			window.open(form.invite_link, '_blank');
+		}
+	});
+
 	// Menu items based on user role
 	const menuItems = data.user?.role === 'admin' 
 		? [
@@ -28,6 +35,9 @@
 
 <svelte:head>
 	<title>Gruppi - Disciplo</title>
+	{#if !data.user?.telegram_id}
+		<script async src="https://telegram.org/js/telegram-widget.js?22"></script>
+	{/if}
 </svelte:head>
 
 <div class="min-h-screen bg-background">
@@ -51,6 +61,106 @@
 	{#if form?.success}
 		<div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
 			<p class="text-sm text-green-600">{form.message}</p>
+		</div>
+	{/if}
+
+	<!-- Telegram Login Widget - Solo se non ha telegram_id -->
+	{#if !data.user?.telegram_id}
+		<div class="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+			<div class="flex items-start space-x-4">
+				<div class="flex-shrink-0">
+					<svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+						<path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zM5.568 12.001l8.54 3.664c.455.195 1.003-.313.81-.768L11.924 5.832c-.137-.324-.588-.324-.725 0L8.205 14.897c-.193.455.355.963.81.768l8.54-3.664z"/>
+					</svg>
+				</div>
+				<div class="flex-1">
+					<h3 class="text-lg font-medium text-blue-900 mb-2">Collega il tuo account Telegram</h3>
+					<p class="text-sm text-blue-700 mb-4">
+						Per entrare nei gruppi Telegram, devi prima collegare il tuo account. 
+						Clicca il bottone qui sotto per autenticarti con Telegram.
+					</p>
+					<div id="telegram-login-widget">
+						<!-- Widget will be loaded here by Telegram script -->
+					</div>
+					
+					<!-- TEMPORARY: Manual test button -->
+					<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+						<p class="text-sm text-yellow-700 mb-2">⚠️ Test locale - Simula collegamento Telegram:</p>
+						<button onclick="testTelegramLink()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+							🔧 Test Collegamento (Fake)
+						</button>
+					</div>
+					
+					<script type="text/javascript">
+						// Force widget loading after script loads
+						if (typeof window !== 'undefined') {
+							window.onTelegramAuth = function(user) {
+								console.log('🔥 Telegram auth received:', user);
+								
+								// Invia i dati al server
+								fetch('/api/telegram-callback', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json',
+										'X-Requested-With': 'XMLHttpRequest'
+									},
+									body: JSON.stringify({
+										id: user.id,
+										first_name: user.first_name,
+										username: user.username || null,
+										auth_date: user.auth_date,
+										hash: user.hash
+									})
+								})
+								.then(response => response.json())
+								.then(data => {
+									if (data.success) {
+										console.log('✅ Telegram ID aggiornato con successo');
+										window.location.reload();
+									} else {
+										console.error('❌ Errore:', data.error);
+										alert('Errore nel collegamento: ' + (data.error || 'Errore sconosciuto'));
+									}
+								})
+								.catch(error => {
+									console.error('❌ Errore chiamata API:', error);
+									alert('Errore di connessione. Riprova.');
+								});
+							};
+							
+							// Create widget manually
+							setTimeout(() => {
+								const widgetContainer = document.getElementById('telegram-login-widget');
+								if (widgetContainer && !widgetContainer.hasChildNodes()) {
+									const script = document.createElement('script');
+									script.src = 'https://telegram.org/js/telegram-widget.js?22';
+									script.setAttribute('data-telegram-login', 'disciplo_bot');
+									script.setAttribute('data-size', 'large');
+									script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+									script.setAttribute('data-request-access', 'write');
+									script.async = true;
+									widgetContainer.appendChild(script);
+								}
+							}, 1000);
+							
+							// Test function for local development
+							window.testTelegramLink = function() {
+								console.log('🔧 Testing Telegram link with fake data');
+								
+								const fakeUser = {
+									id: 8218568250, // Your real Telegram ID from logs
+									first_name: 'james',
+									username: 'testuser',
+									auth_date: Math.floor(Date.now() / 1000),
+									hash: 'fake_hash_for_testing'
+								};
+								
+								window.onTelegramAuth(fakeUser);
+							};
+						}
+					</script>
+				</div>
+			</div>
 		</div>
 	{/if}
 
@@ -144,7 +254,7 @@
 											size="sm"
 											disabled={loading === group.id}
 										>
-											{loading === group.id ? 'Iscrivendosi...' : 'Iscriviti'}
+											{loading === group.id ? 'Creando link...' : 'Iscriviti'}
 										</Button>
 									</form>
 								{/if}
@@ -170,3 +280,4 @@
 		</div>
 	</div>
 </div>
+

@@ -96,6 +96,119 @@ class Config {
         }
     }
 
+    async saveInviteMapping(inviteLink, userId, groupId, telegramGroupId, expires) {
+        try {
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            // Create record in invite_mappings collection
+            const record = await this.pb.collection('invite_mappings').create({
+                invite_link: inviteLink,
+                user_id: userId,
+                group_id: groupId,
+                telegram_group_id: telegramGroupId,
+                expires: expires,
+                used: false
+            });
+
+            console.log(`✅ Invite mapping saved: ${inviteLink} → user ${userId}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error saving invite mapping:', error);
+            return false;
+        }
+    }
+
+    async findInviteMapping(inviteLink) {
+        try {
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            const records = await this.pb.collection('invite_mappings').getFullList({
+                filter: this.pb.filter('invite_link = {:link} && used = false', { link: inviteLink })
+            });
+
+            if (records.length === 0) {
+                console.log(`❌ No mapping found for invite link: ${inviteLink}`);
+                return null;
+            }
+
+            const mapping = records[0];
+            console.log(`✅ Found mapping: ${inviteLink} → user ${mapping.user_id}`);
+            return mapping;
+            
+        } catch (error) {
+            console.error('❌ Error finding invite mapping:', error);
+            return null;
+        }
+    }
+
+
+    async markInviteMappingUsed(inviteLink) {
+        try {
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            const mapping = await this.findInviteMapping(inviteLink);
+            if (!mapping) {
+                return false;
+            }
+
+            await this.pb.collection('invite_mappings').update(mapping.id, {
+                used: true
+            });
+
+            console.log(`✅ Marked invite mapping as used: ${inviteLink}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error marking invite mapping as used:', error);
+            return false;
+        }
+    }
+
+    async linkUserTelegramFromInvite(userId, telegramId, telegramUsername = null) {
+        try {
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            // Update user record with telegram info
+            const updateData = {
+                telegram_id: telegramId.toString()
+            };
+
+            if (telegramUsername) {
+                updateData.telegram_name = telegramUsername;
+                updateData.data = JSON.stringify({
+                    username: telegramUsername,
+                    linked_at: new Date().toISOString()
+                });
+            }
+
+            await this.pb.collection('members').update(userId, updateData);
+
+            console.log(`✅ User ${userId} linked with Telegram ID ${telegramId}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error linking user with Telegram:', error);
+            return false;
+        }
+    }
+
     async syncTelegramGroup(groupInfo) {
         try {
             const host = process.env.HOST;

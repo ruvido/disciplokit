@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => {
 			'process.env.HOST': JSON.stringify(env.HOST),
 			'process.env.POCKETBASE_PORT': JSON.stringify(env.POCKETBASE_PORT)
 		},
-		envPrefix: 'PUBLIC_'
+		envPrefix: 'PUBLIC_',
+		server: {
+			host: true,  // Permette connessioni esterne
+			allowedHosts: ['branco.realmen.it']  // Host permesso per Telegram Widget
+		}
 	};
 });

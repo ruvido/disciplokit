@@ -75,3 +75,5 @@ docker-compose up -d
 
 Sistema simile a MightyNetworks/Circle ma specifico per Telegram.
 - MAI hardcoded variables!
+- usa https://pocketbase.io/jsvm/ per pocketbase api
+- non ci devono essere variabili hardcoded, usa .env per le variabili
