@@ -11,8 +11,11 @@ RUN bun install
 # Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 5173
+# Build for production
+RUN bun run build
 
-# Start dev server with external host binding
-CMD ["bun", "run", "dev", "--host", "0.0.0.0", "--port", "5173"]
+# Expose port
+EXPOSE 3000
+
+# Start production server with Node adapter
+CMD ["node", "build"]

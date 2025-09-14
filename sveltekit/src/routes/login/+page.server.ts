@@ -24,6 +24,11 @@ export const actions: Actions = {
         const { email, password } = data as { email: string; password: string };
 
         try {
+            console.log('🔍 LOGIN DEBUG:', {
+                pocketbaseUrl: locals.pb.baseUrl,
+                email,
+                passwordLength: password.length
+            });
             await locals.pb.collection('members').authWithPassword(email, password);
         } catch (err: any) {
             // Check for connection errors first (no status code)

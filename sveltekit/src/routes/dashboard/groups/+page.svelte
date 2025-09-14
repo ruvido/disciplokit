@@ -13,6 +13,11 @@
 	let { data, form }: Props = $props();
 	let loading = $state<string | null>(null);
 
+	function testTelegramLink() {
+		// Test function placeholder
+		alert('Test function called');
+	}
+
 	// Open invite link when form succeeds
 	$effect(() => {
 		if (form?.success && form?.invite_link) {
@@ -86,7 +91,7 @@
 					<!-- TEMPORARY: Manual test button -->
 					<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
 						<p class="text-sm text-yellow-700 mb-2">⚠️ Test locale - Simula collegamento Telegram:</p>
-						<button onclick="testTelegramLink()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+						<button on:click={testTelegramLink} class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
 							🔧 Test Collegamento (Fake)
 						</button>
 					</div>
