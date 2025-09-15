@@ -36,7 +36,11 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 		console.log(`👤 Found authenticated user: ${userId} (${authInfo.record.email || 'no email'})`);
 
 		// Call PocketBase custom endpoint - server-side processing
-		const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://127.0.0.1:8090';
+		const pocketbaseUrl = process.env.POCKETBASE_URL;
+		if (!pocketbaseUrl) {
+			console.error('❌ POCKETBASE_URL is required in .env file');
+			process.exit(1);
+		}
 		console.log(`📡 Calling PocketBase: ${pocketbaseUrl}/api/custom/link-telegram`);
 
 		try {

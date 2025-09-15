@@ -1,6 +1,10 @@
 import PocketBase from 'pocketbase';
 
-const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
+const pocketbaseUrl = process.env.POCKETBASE_URL;
+if (!pocketbaseUrl) {
+	console.error('❌ POCKETBASE_URL is required in .env file');
+	process.exit(1);
+}
 
 console.log('🔗 PocketBase FIXED:', {
     isServer: typeof window === 'undefined',

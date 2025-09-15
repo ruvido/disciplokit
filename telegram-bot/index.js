@@ -279,7 +279,11 @@ class DisciploBot {
         }
         
         // Start HTTP server
-        const port = process.env.BOT_PORT || 3000;
+        const port = process.env.BOT_PORT;
+        if (!port) {
+            console.error('❌ BOT_PORT is required in .env file');
+            process.exit(1);
+        }
         this.httpServer.listen(port, () => {
             console.log(`🌐 HTTP server listening on port ${port}`);
         });

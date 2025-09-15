@@ -3,6 +3,11 @@
 // Hook to set default values when creating new members
 onRecordCreate((e) => {
     const adminEmail = $os.getenv('POCKETBASE_ADMIN_EMAIL');
+    if (!adminEmail) {
+        console.error('❌ POCKETBASE_ADMIN_EMAIL is required in .env file');
+        return; // Don't crash the hook, just skip admin role assignment
+    }
+
     const memberEmail = e.record.get('email');
     
     // Set default role to "member" if not admin and not already specified
