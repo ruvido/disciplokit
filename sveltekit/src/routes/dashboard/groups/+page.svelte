@@ -13,10 +13,6 @@
 	let { data, form }: Props = $props();
 	let loading = $state<string | null>(null);
 
-	function testTelegramLink() {
-		// Test function placeholder
-		alert('Test function called');
-	}
 
 	// Open invite link when form succeeds
 	$effect(() => {
@@ -88,20 +84,13 @@
 						<!-- Widget will be loaded here by Telegram script -->
 					</div>
 					
-					<!-- TEMPORARY: Manual test button -->
-					<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-						<p class="text-sm text-yellow-700 mb-2">⚠️ Test locale - Simula collegamento Telegram:</p>
-						<button on:click={testTelegramLink} class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-							🔧 Test Collegamento (Fake)
-						</button>
-					</div>
 					
 					<script type="text/javascript">
 						// Force widget loading after script loads
 						if (typeof window !== 'undefined') {
-							window.onTelegramAuth = function(user) {
+							function onTelegramAuth(user) {
 								console.log('🔥 Telegram auth received:', user);
-								
+
 								// Invia i dati al server
 								fetch('/api/telegram-callback', {
 									method: 'POST',
@@ -131,7 +120,10 @@
 									console.error('❌ Errore chiamata API:', error);
 									alert('Errore di connessione. Riprova.');
 								});
-							};
+							}
+
+							// Expose globally for Telegram widget
+							window.onTelegramAuth = onTelegramAuth;
 							
 							// Create widget manually
 							setTimeout(() => {
@@ -148,20 +140,6 @@
 								}
 							}, 1000);
 							
-							// Test function for local development
-							window.testTelegramLink = function() {
-								console.log('🔧 Testing Telegram link with fake data');
-								
-								const fakeUser = {
-									id: 8218568250, // Your real Telegram ID from logs
-									first_name: 'james',
-									username: 'testuser',
-									auth_date: Math.floor(Date.now() / 1000),
-									hash: 'fake_hash_for_testing'
-								};
-								
-								window.onTelegramAuth(fakeUser);
-							};
 						}
 					</script>
 				</div>
