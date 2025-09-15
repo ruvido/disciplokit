@@ -60,11 +60,16 @@ routerAdd("POST", "/api/custom/link-telegram", (e) => {
             return e.json(404, {"error": "Member not found"});
         }
         
-        // Prepare update data
-        member.set("telegram_id", data.telegramId.toString());
+        // Prepare update data - ensure telegramId is properly converted
+        const telegramId = data.telegramId;
+        if (!telegramId) {
+            return e.json(400, {"error": "Telegram ID is required"});
+        }
+        
+        member.set("telegram_id", String(telegramId));
         
         if (data.telegramUsername) {
-            member.set("telegram_name", data.telegramUsername);
+            member.set("telegram_name", String(data.telegramUsername));
         }
         
         // Save the updated member

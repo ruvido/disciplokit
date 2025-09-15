@@ -1,3 +1,4 @@
+env.bak
 .env*
 pocketbase/pocketbase*
 pb_data

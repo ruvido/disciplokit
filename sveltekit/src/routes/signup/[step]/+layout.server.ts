@@ -1,29 +1,30 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { LayoutServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
-    // Get signup configuration and redirect to first step
+export const load: LayoutServerLoad = async ({ url }) => {
+    // Load signup configuration using our API endpoint
     try {
         const pocketbaseUrl = url.origin.replace(':5173', ':8090');
         const response = await fetch(`${pocketbaseUrl}/api/signup/config`);
         
         if (!response.ok) {
+            console.error('Failed to fetch signup config:', response.status);
             throw redirect(303, '/login');
         }
         
         const result = await response.json();
         
         if (!result.enabled || !result.steps?.length) {
+            console.error('Signup not enabled or no steps configured');
             throw redirect(303, '/login');
         }
         
-        const firstStep = result.steps[0].id;
-        throw redirect(303, `/signup/${firstStep}`);
+        return {
+            signupConfig: result
+        };
         
     } catch (error) {
-        if (error.status === 303) {
-            throw error; // Re-throw redirects
-        }
+        console.error('Failed to load signup configuration:', error);
         throw redirect(303, '/login');
     }
 };

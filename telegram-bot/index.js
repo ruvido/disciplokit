@@ -120,7 +120,7 @@ class DisciploBot {
                     ctx.reply('✅ Account collegato con successo! Ora puoi essere gestito dalla dashboard Disciplo.');
                     console.log(`✅ Linked member ${memberId} with Telegram ID ${telegramId}`);
                 } else {
-                    ctx.reply('❌ Errore nel collegamento. Riprova più tardi o contatta l\'amministratore.');
+                    ctx.reply("❌ Errore nel collegamento. Riprova più tardi o contatta l'amministratore.");
                     console.error(`❌ Failed to link member ${memberId} with Telegram ID ${telegramId}`);
                 }
             } else {
