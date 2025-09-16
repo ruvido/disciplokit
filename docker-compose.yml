@@ -35,6 +35,11 @@ services:
     build:
       context: ./sveltekit
       dockerfile: Dockerfile
+      args:
+        POCKETBASE_URL: ${POCKETBASE_URL}
+        TELEGRAM_LINK_SECRET: ${TELEGRAM_LINK_SECRET}
+        HOST: ${HOST}
+        POCKETBASE_PORT: ${POCKETBASE_PORT}
     container_name: disciplo-frontend
     restart: unless-stopped
     network_mode: host
