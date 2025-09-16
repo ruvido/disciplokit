@@ -8,10 +8,11 @@ export const load: PageServerLoad = async (event) => {
 
     // Get user's full record with profile context
     try {
-        const fullUser = await client.getOne('members', user.id, { 
+        const fullUser = await client.getOne('members', user.id, {
             context: 'profile',
-            timeoutMs: 3000 
+            timeoutMs: 3000
         });
+
         return {
             user: fullUser
         };

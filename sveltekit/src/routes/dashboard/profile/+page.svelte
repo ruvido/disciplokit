@@ -17,7 +17,7 @@
 	
 	// Check if user has telegram linked
 	const isTelegramLinked = $derived(!!data.user?.telegram_id);
-	const telegramData = $derived(data.user?.data ? JSON.parse(data.user.data) : null);
+	const telegramData = $derived(data.user?.data || null);
 	
 	// Generate telegram link
 	async function generateTelegramLink() {
