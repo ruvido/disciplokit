@@ -96,6 +96,11 @@ docker-compose up -d
 - **Auto-sync**: Bot come admin → sync automatico gruppi in PocketBase
 
 Sistema simile a MightyNetworks/Circle ma specifico per Telegram.
+
+## Best Practices
 - **MAI hardcoded variables!** → fail-fast validation obbligatoria
-- **PocketBase JSVM**: https://pocketbase.io/jsvm/ per hooks server-side
+- **PocketBase docs sono SACRI**: https://pocketbase.io/docs/ e https://pocketbase.io/jsvm/
+  - MAI inventare sintassi o API non documentate
+  - Controllare SEMPRE docs ufficiali prima di scrivere codice PocketBase
+  - Molte funzionalità (CORS, auth, etc.) sono built-in - non reinventare
 - **SvelteKit produzione**: @sveltejs/adapter-node + csrf: false per reverse proxy

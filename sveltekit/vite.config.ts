@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 		envPrefix: 'PUBLIC_',
 		server: {
 			host: true,  // Permette connessioni esterne
-			allowedHosts: ['branco.realmen.it']  // Host permesso per Telegram Widget
+			allowedHosts: ['localhost', 'branco.realmen.it']  // Host permessi per dev locale e produzione
 		}
 	};
 });

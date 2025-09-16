@@ -3,6 +3,10 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// Inject environment variables for client-side use
+			window.__POCKETBASE_URL__ = '%sveltekit.env.PUBLIC_POCKETBASE_URL%';
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

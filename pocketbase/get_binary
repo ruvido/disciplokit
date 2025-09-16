@@ -1,0 +1,2 @@
+#wget https://github.com/pocketbase/pocketbase/releases/download/v0.30.0/pocketbase_0.30.0_darwin_arm64.zip
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.30.0/pocketbase_0.30.0_linux_amd64.zip

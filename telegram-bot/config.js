@@ -2,15 +2,15 @@ const PocketBase = require('pocketbase').default;
 
 class Config {
     constructor() {
-        const host = process.env.HOST;
-        const port = process.env.POCKETBASE_PORT;
-        
-        if (!host || !port) {
-            console.error('❌ HOST and POCKETBASE_PORT environment variables are required');
+        // Prefer POCKETBASE_URL, fallback to HOST:PORT for compatibility
+        const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                             `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
+
+        if (!pocketbaseUrl) {
+            console.error('❌ POCKETBASE_URL or HOST+POCKETBASE_PORT environment variables are required');
             process.exit(1);
         }
-        
-        const pocketbaseUrl = `http://${host}:${port}`;
+
         this.pb = new PocketBase(pocketbaseUrl);
         console.log(`🔗 Connecting to PocketBase at: ${pocketbaseUrl}`);
     }
@@ -49,16 +49,16 @@ class Config {
 
     async linkUserTelegram(linkParam, telegramId, telegramUsername = null) {
         try {
-            const host = process.env.HOST;
-            const port = process.env.POCKETBASE_PORT;
+            const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                                 `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
             const endpoint = process.env.POCKETBASE_LINK_ENDPOINT;
-            
-            if (!host || !port || !endpoint) {
+
+            if (!pocketbaseUrl || !endpoint) {
                 console.error('❌ Missing PocketBase configuration');
                 return false;
             }
-            
-            const url = `http://${host}:${port}${endpoint}`;
+
+            const url = `${pocketbaseUrl}${endpoint}`;
             
             // Prepare request data
             const requestData = {
@@ -211,17 +211,17 @@ class Config {
 
     async syncTelegramGroup(groupInfo) {
         try {
-            const host = process.env.HOST;
-            const port = process.env.POCKETBASE_PORT;
+            const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                                 `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
             const endpoint = process.env.POCKETBASE_SYNC_GROUP_ENDPOINT;
             const secret = process.env.TELEGRAM_LINK_SECRET;
-            
-            if (!host || !port || !endpoint || !secret) {
+
+            if (!pocketbaseUrl || !endpoint || !secret) {
                 console.error('❌ Missing PocketBase sync group configuration');
                 return false;
             }
-            
-            const url = `http://${host}:${port}${endpoint}`;
+
+            const url = `${pocketbaseUrl}${endpoint}`;
             
             // Generate HMAC token for security (same as telegram linking)
             const timestamp = Date.now();

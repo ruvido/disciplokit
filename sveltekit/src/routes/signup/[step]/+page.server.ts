@@ -50,7 +50,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
 export const actions: Actions = {
     next: async ({ request, params, locals, url }) => {
         // Load signup config
-        const pocketbaseUrl = url.origin.replace(':5173', ':8090');
+        const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
         const configResponse = await fetch(`${pocketbaseUrl}/api/signup/config`);
         if (!configResponse.ok) {
             return fail(500, { error: 'Errore di configurazione' });
@@ -241,7 +241,7 @@ export const actions: Actions = {
     
     previous: async ({ params, url }) => {
         // Load signup config
-        const pocketbaseUrl = url.origin.replace(':5173', ':8090');
+        const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
         const configResponse = await fetch(`${pocketbaseUrl}/api/signup/config`);
         if (!configResponse.ok) {
             throw redirect(303, '/login');

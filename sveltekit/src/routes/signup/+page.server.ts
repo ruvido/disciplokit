@@ -1,29 +1,25 @@
-import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
-    // Get signup configuration and redirect to first step
+    // Always return basic signup data - no redirects!
+    // Progressive enhancement: try to load config, but don't fail
+    let signupConfig = null;
+
     try {
-        const pocketbaseUrl = url.origin.replace(':5173', ':8090');
+        const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
         const response = await fetch(`${pocketbaseUrl}/api/signup/config`);
-        
-        if (!response.ok) {
-            throw redirect(303, '/login');
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.enabled && result.steps?.length) {
+                signupConfig = result;
+            }
         }
-        
-        const result = await response.json();
-        
-        if (!result.enabled || !result.steps?.length) {
-            throw redirect(303, '/login');
-        }
-        
-        const firstStep = result.steps[0].id;
-        throw redirect(303, `/signup/${firstStep}`);
-        
     } catch (error) {
-        if (error.status === 303) {
-            throw error; // Re-throw redirects
-        }
-        throw redirect(303, '/login');
+        console.log('Signup config not available, using basic form');
     }
+
+    return {
+        signupConfig
+    };
 };

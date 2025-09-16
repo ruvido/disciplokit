@@ -4,7 +4,7 @@ import type { LayoutServerLoad } from './$types';
 export const load: LayoutServerLoad = async ({ url }) => {
     // Load signup configuration using our API endpoint
     try {
-        const pocketbaseUrl = url.origin.replace(':5173', ':8090');
+        const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://localhost:8090';
         const response = await fetch(`${pocketbaseUrl}/api/signup/config`);
         
         if (!response.ok) {
