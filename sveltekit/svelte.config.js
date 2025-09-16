@@ -14,7 +14,7 @@ const config = {
 		adapter: adapter(),
 		// Disable CSRF protection for development (following official SvelteKit docs)
 		csrf: {
-			checkOrigin: false
+			trustedOrigins: ['*']
 		}
 	}
 };
