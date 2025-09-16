@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => {
 			// Make env vars available to the app
 			'process.env.TELEGRAM_LINK_SECRET': JSON.stringify(env.TELEGRAM_LINK_SECRET),
 			'process.env.HOST': JSON.stringify(env.HOST),
-			'process.env.POCKETBASE_PORT': JSON.stringify(env.POCKETBASE_PORT)
+			'process.env.POCKETBASE_PORT': JSON.stringify(env.POCKETBASE_PORT),
+			'process.env.POCKETBASE_URL': JSON.stringify(env.POCKETBASE_URL)
 		},
 		envPrefix: 'PUBLIC_',
 		server: {
