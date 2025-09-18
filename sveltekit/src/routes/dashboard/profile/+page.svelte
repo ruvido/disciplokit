@@ -16,7 +16,7 @@
 	let isGeneratingLink = $state(false);
 	
 	// Check if user has telegram linked
-	const isTelegramLinked = $derived(!!data.user?.telegram_id);
+	const isTelegramLinked = $derived(!!data.user?.telegram?.id);
 	const telegramData = $derived(data.user?.data || null);
 	
 	// Generate telegram link
@@ -155,7 +155,7 @@
 							</div>
 							<div>
 								<div class="font-medium text-green-800">
-									{data.user?.telegram_name || 'Telegram User'}
+									{data.user?.telegram?.first_name || data.user?.telegram?.name || 'Telegram User'}
 								</div>
 								<div class="text-sm text-green-600">
 									Collegato il {telegramData?.linked_at ? formatDate(telegramData.linked_at) : 'N/A'}

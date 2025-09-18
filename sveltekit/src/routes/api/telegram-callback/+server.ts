@@ -74,7 +74,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			return json({
 				success: true,
 				message: 'Telegram account linked successfully',
-				telegram_id: authData.id
+				telegram: { id: authData.id }
 			});
 
 		} catch (fetchError: any) {

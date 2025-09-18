@@ -18,10 +18,10 @@ routerAdd("POST", syncGroupEndpoint, (e) => {
             name: "",
             timestamp: 0
         });
-        
+
         e.bindBody(data);
-        console.log("📨 Request data:", `telegram_id: ${data.telegram_id}, name: ${data.name}`);
-        
+        console.log("📨 Request data:", `telegram.id: ${data.telegram_id}, name: ${data.name}`);
+
         // Check required fields
         if (!data.telegram_id || !data.name || !data.timestamp) {
             return e.json(400, {
@@ -64,15 +64,15 @@ routerAdd("POST", syncGroupEndpoint, (e) => {
             }
         }
         
-        // Check for existing group
-        const existingGroups = $app.findRecordsByFilter("groups", `data.telegram_id = "${data.telegram_id}"`);
-        
+        // Check for existing group using new telegram object structure
+        const existingGroups = $app.findRecordsByFilter("groups", `data.telegram.id = "${data.telegram_id}"`);
+
         if (existingGroups.length > 0) {
             // Update existing group
             const existingGroup = existingGroups[0];
             existingGroup.set('name', data.name);
             $app.save(existingGroup);
-            
+
             console.log(`✅ Updated existing group: ${data.name}`);
             return e.json(200, {
                 "success": true,
@@ -83,21 +83,23 @@ routerAdd("POST", syncGroupEndpoint, (e) => {
             // Create new group
             const allGroups = $app.findRecordsByFilter("groups", "");
             const isFirstGroup = allGroups.length === 0;
-            
+
             const groupsCollection = $app.findCollectionByNameOrId("groups");
             const newGroup = new Record(groupsCollection);
-            
+
             newGroup.set('name', data.name);
             newGroup.set('data', {
-                telegram_id: data.telegram_id,
+                telegram: {
+                    id: data.telegram_id
+                },
                 description: isFirstGroup ? 'Default group' : 'Telegram group',
                 type: isFirstGroup ? 'default' : 'local'
             });
             newGroup.set('members', []);
             newGroup.set('moderator', adminMemberId);
-            
+
             $app.save(newGroup);
-            
+
             console.log(`✅ Created new group: ${data.name}`);
             return e.json(200, {
                 "success": true,

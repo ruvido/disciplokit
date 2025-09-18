@@ -187,7 +187,7 @@ class DisciploBot {
                     const telegramUsername = newMember.user.username;
                     
                     console.log(`🔗 Found mapping: invite_link → user_id ${userId}`);
-                    console.log(`🔗 Linking user_id ${userId} with telegram_id ${telegramId}`);
+                    console.log(`🔗 Linking user_id ${userId} with telegram.id ${telegramId}`);
                     
                     // Update database: user_id → telegram_id
                     const linkSuccess = await this.config.linkUserTelegramFromInvite(

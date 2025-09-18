@@ -46,17 +46,17 @@ routerAdd("POST", "/api/custom/create-invite-link", (e) => {
         
         console.log(`📊 Parsed group data:`, groupData);
         
-        const telegramGroupId = groupData["telegram_id"];
+        const telegramGroupId = groupData.telegram?.id;
         console.log(`🎯 Telegram group ID:`, telegramGroupId);
-        
+
         // Debug: try different ways to access the property
-        console.log(`🔍 Direct access:`, groupData.telegram_id);
-        console.log(`🔍 Bracket access:`, groupData["telegram_id"]);
+        console.log(`🔍 Telegram object:`, groupData.telegram);
+        console.log(`🔍 Telegram ID:`, groupData.telegram?.id);
         console.log(`🔍 Object keys:`, Object.keys(groupData));
         console.log(`🔍 typeof groupData:`, typeof groupData);
-        
+
         if (!telegramGroupId) {
-            console.error(`❌ No telegram_id found in group data:`, groupData);
+            console.error(`❌ No telegram.id found in group data:`, groupData);
             return e.json(400, { "error": "Group is not linked to Telegram" });
         }
         

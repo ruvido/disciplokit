@@ -47,7 +47,7 @@ routerAdd("POST", "/api/invite-link/{groupId}", (e) => {
         
         // Get the Telegram group ID from group data
         const groupData = group.get("data") || {};
-        const telegramGroupId = groupData.telegram_id;
+        const telegramGroupId = groupData.telegram?.id;
         
         if (!telegramGroupId) {
             return e.json(400, { "error": "Group is not linked to Telegram" });

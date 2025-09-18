@@ -36,7 +36,7 @@
 
 <svelte:head>
 	<title>Gruppi - Disciplo</title>
-	{#if !data.user?.telegram_id}
+	{#if !data.user?.telegram?.id}
 		<script async src="https://telegram.org/js/telegram-widget.js?22"></script>
 	{/if}
 </svelte:head>
@@ -65,8 +65,8 @@
 		</div>
 	{/if}
 
-	<!-- Telegram Login Widget - Solo se non ha telegram_id -->
-	{#if !data.user?.telegram_id}
+	<!-- Telegram Login Widget - Solo se non ha telegram.id -->
+	{#if !data.user?.telegram?.id}
 		<div class="mb-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
 			<div class="flex items-start space-x-4">
 				<div class="flex-shrink-0">

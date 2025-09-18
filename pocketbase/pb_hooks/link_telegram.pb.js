@@ -65,14 +65,16 @@ routerAdd("POST", "/api/custom/link-telegram", (e) => {
                     return e.json(400, {"error": "Telegram ID is required"});
                 }
 
-                member.set("telegram_id", telegramId.toString());
-                member.set("telegram_name", telegramName);
-
+                const telegramData = {
+                    id: telegramId.toString(),
+                    name: telegramName
+                };
                 if (telegramUsername) {
-                    member.set("telegram_username", telegramUsername);
+                    telegramData.username = telegramUsername;
                 }
+                member.set("telegram", telegramData);
 
-                console.log(`💾 Saving member with telegram_id: ${telegramId}`);
+                console.log(`💾 Saving member with telegram.id: ${telegramId}`);
                 // Save using $app - this has full server-side access
                 $app.save(member);
 
@@ -81,7 +83,7 @@ routerAdd("POST", "/api/custom/link-telegram", (e) => {
                 return e.json(200, {
                     "success": true,
                     "message": "Telegram account linked successfully",
-                    "telegram_id": telegramId
+                    "telegram.id": telegramId
                 });
 
             } catch (error) {
@@ -165,11 +167,13 @@ routerAdd("POST", "/api/custom/link-telegram", (e) => {
             return e.json(400, {"error": "Telegram ID is required"});
         }
         
-        member.set("telegram_id", String(telegramId));
-        
+        const telegramData = {
+            id: String(telegramId)
+        };
         if (data.telegramUsername) {
-            member.set("telegram_name", String(data.telegramUsername));
+            telegramData.name = String(data.telegramUsername);
         }
+        member.set("telegram", telegramData);
         
         // Save the updated member
         $app.save(member);

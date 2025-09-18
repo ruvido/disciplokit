@@ -59,32 +59,23 @@ routerAdd("POST", "/api/telegram-callback", (e) => {
         }
         
         // Set Telegram data
-        member.set("telegram_id", data.id.toString());
-        
+        const telegramData = {
+            id: data.id.toString()
+        };
+
         if (data.first_name) {
-            member.set("telegram_name", data.first_name);
+            telegramData.first_name = data.first_name;
         }
-        
+
+        if (data.last_name) {
+            telegramData.last_name = data.last_name;
+        }
+
         if (data.username) {
-            // Store additional data in JSON field if needed
-            const existingData = member.get("data");
-            let memberData = {};
-            
-            try {
-                if (existingData) {
-                    const jsonString = existingData.string ? existingData.string() : existingData;
-                    memberData = JSON.parse(jsonString);
-                }
-            } catch (parseError) {
-                console.log("📊 Creating new data object");
-                memberData = {};
-            }
-            
-            memberData.telegram_username = data.username;
-            memberData.telegram_linked_at = new Date().toISOString();
-            
-            member.set("data", JSON.stringify(memberData));
+            telegramData.username = data.username;
         }
+
+        member.set("telegram", telegramData);
         
         // Save updated member record
         $app.save(member);
@@ -94,7 +85,7 @@ routerAdd("POST", "/api/telegram-callback", (e) => {
         return e.json(200, { 
             "success": true,
             "message": "Telegram account linked successfully",
-            "telegram_id": data.id
+            "telegram.id": data.id
         });
         
     } catch (error) {

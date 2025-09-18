@@ -186,17 +186,17 @@ class Config {
             );
 
             // Update user record with telegram info
-            const updateData = {
-                telegram_id: telegramId.toString()
+            const telegramData = {
+                id: telegramId.toString()
             };
 
             if (telegramUsername) {
-                updateData.telegram_name = telegramUsername;
-                updateData.data = JSON.stringify({
-                    username: telegramUsername,
-                    linked_at: new Date().toISOString()
-                });
+                telegramData.username = telegramUsername;
             }
+
+            const updateData = {
+                telegram: telegramData
+            };
 
             await this.pb.collection('members').update(userId, updateData);
 
