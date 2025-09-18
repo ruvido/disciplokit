@@ -5,8 +5,8 @@ const syncGroupEndpoint = $os.getenv('POCKETBASE_SYNC_GROUP_ENDPOINT');
 
 if (!syncGroupEndpoint) {
     console.error("❌ POCKETBASE_SYNC_GROUP_ENDPOINT not configured in environment");
-    process.exit(1);
-}
+    // Non possiamo fare return qui - continua senza registrare route
+} else {
 
 routerAdd("POST", syncGroupEndpoint, (e) => {
     console.log("🎯 Hook called successfully!");
@@ -116,3 +116,5 @@ routerAdd("POST", syncGroupEndpoint, (e) => {
         });
     }
 });
+
+}

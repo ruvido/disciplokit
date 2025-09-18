@@ -101,6 +101,7 @@
 									body: JSON.stringify({
 										id: user.id,
 										first_name: user.first_name,
+										last_name: user.last_name,
 										username: user.username || null,
 										auth_date: user.auth_date,
 										hash: user.hash

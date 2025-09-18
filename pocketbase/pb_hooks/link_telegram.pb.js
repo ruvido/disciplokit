@@ -65,14 +65,14 @@ routerAdd("POST", "/api/custom/link-telegram", (e) => {
                     return e.json(400, {"error": "Telegram ID is required"});
                 }
 
-                const telegramData = {
+                const memberTelegramData = {
                     id: telegramId.toString(),
                     name: telegramName
                 };
                 if (telegramUsername) {
-                    telegramData.username = telegramUsername;
+                    memberTelegramData.username = telegramUsername;
                 }
-                member.set("telegram", telegramData);
+                member.set("telegram", memberTelegramData);
 
                 console.log(`💾 Saving member with telegram.id: ${telegramId}`);
                 // Save using $app - this has full server-side access

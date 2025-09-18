@@ -14,10 +14,12 @@
 	let { data }: Props = $props();
 	let isLoading = $state(false);
 	let isGeneratingLink = $state(false);
+	let awaitingTelegramLink = $state(false);
 	
 	// Check if user has telegram linked
 	const isTelegramLinked = $derived(!!data.user?.telegram?.id);
-	const telegramData = $derived(data.user?.data || null);
+	const telegramData = $derived(data.user?.telegram || null);
+
 	
 	// Generate telegram link
 	async function generateTelegramLink() {
@@ -27,6 +29,7 @@
 			const result = await response.json();
 			
 			if (result.success) {
+				awaitingTelegramLink = true;
 				window.open(result.link, '_blank');
 			} else {
 				alert('Errore nella generazione del link: ' + result.error);
@@ -36,6 +39,17 @@
 		} finally {
 			isGeneratingLink = false;
 		}
+	}
+
+	// Refresh page data when user returns after linking (focus event)
+	if (typeof window !== 'undefined') {
+		window.addEventListener('focus', () => {
+			if (awaitingTelegramLink) {
+				console.log('🔄 User returned to page, refreshing data...');
+				awaitingTelegramLink = false;
+				window.location.reload();
+			}
+		});
 	}
 	
 	// Menu items based on user role
@@ -155,13 +169,13 @@
 							</div>
 							<div>
 								<div class="font-medium text-green-800">
-									{data.user?.telegram?.first_name || data.user?.telegram?.name || 'Telegram User'}
+									{data.user?.telegram?.name || 'Telegram User'}
 								</div>
 								<div class="text-sm text-green-600">
 									Collegato il {telegramData?.linked_at ? formatDate(telegramData.linked_at) : 'N/A'}
 								</div>
-								{#if telegramData?.username}
-									<div class="text-xs text-green-500">@{telegramData.username}</div>
+								{#if data.user?.telegram?.username}
+									<div class="text-xs text-green-500">@{data.user.telegram.username}</div>
 								{/if}
 							</div>
 						</div>

@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
 		},
 		envPrefix: 'PUBLIC_',
 		server: {
-			host: true,  // Permette connessioni esterne
-			allowedHosts: ['localhost', 'branco.realmen.it']  // Host permessi per dev locale e produzione
+			host: true,  // Permette connessioni esterne (localhost + VPS)
+			port: 3000
 		}
 	};
 });

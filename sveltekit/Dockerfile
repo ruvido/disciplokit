@@ -23,8 +23,11 @@ RUN bun install
 # Copy source code
 COPY . .
 
-# Build for production
-RUN bun run build
+# Build for production with verbose error reporting
+RUN set -e && \
+    echo "🏗️  Starting SvelteKit build..." && \
+    bun run build || \
+    (echo "❌ BUILD FAILED! Check syntax errors above." && exit 1)
 
 # Expose port
 EXPOSE 3000

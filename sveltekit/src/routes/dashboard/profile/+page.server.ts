@@ -10,8 +10,10 @@ export const load: PageServerLoad = async (event) => {
     try {
         const fullUser = await client.getOne('members', user.id, {
             context: 'profile',
-            timeoutMs: 3000
+            timeoutMs: 3000,
+            fields: '*' // Explicitly request all fields including JSON fields
         });
+
 
         return {
             user: fullUser

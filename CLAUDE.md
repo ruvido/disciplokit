@@ -44,22 +44,14 @@ Web App (SvelteKit) ←→ PocketBase API ←→ Bot Telegram
 ## Setup Sviluppo
 
 ```bash
-# Configurazione ambiente (file .env nel root del progetto)
-# Variabili condivise da tutti i componenti
-
 # Terminal 1: Backend
-cd pocketbase
-./pocketbase serve --http=127.0.0.1:8090
+cd pocketbase && ./pocketbase serve --http=127.0.0.1:8090
 
 # Terminal 2: Bot Telegram
-cd telegram-bot
-npm install
-npm start
+cd telegram-bot && bun install && bun start
 
 # Terminal 3: Frontend
-cd sveltekit
-npm install
-npm run dev
+cd sveltekit && bun install && bun run dev
 ```
 
 ## Configurazione Ambiente
@@ -72,7 +64,7 @@ File `.env` nel root del progetto condiviso da tutti i componenti con **fail-fas
 
 ## Deploy Produzione (VPS)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## API Principali
@@ -96,6 +88,12 @@ docker-compose up -d
 - **Auto-sync**: Bot come admin → sync automatico gruppi in PocketBase
 
 Sistema simile a MightyNetworks/Circle ma specifico per Telegram.
+
+## TODO Futuro
+- [ ] **Produzione optimized**: Creare Dockerfile.prod per build ottimizzato in produzione
+- [ ] **CI/CD Pipeline**: Setup automatico build/deploy separato dev/prod
+- [ ] **Performance**: Implementare SSG per pagine statiche
+- [ ] **Monitoring**: Aggiungere health checks e logging produzione
 
 ## Best Practices
 - **MAI hardcoded variables!** → fail-fast validation obbligatoria

@@ -66,12 +66,18 @@ export class EnhancedPocketBaseClient {
         );
     }
 
-    async getOne(collection: string, id: string, options: { timeoutMs?: number; context?: string } = {}) {
-        const { timeoutMs = 5000, context = 'fetch' } = options;
+    async getOne(collection: string, id: string, options: { timeoutMs?: number; context?: string; expand?: string; fields?: string } = {}) {
+        const { timeoutMs = 5000, context = 'fetch', expand, fields } = options;
         const actualTimeout = context === 'profile' ? 3000 : timeoutMs;
-        
+
         return withTimeout(
-            () => this.pb.collection(collection).getOne(id),
+            () => {
+                const query = this.pb.collection(collection);
+                const params: any = {};
+                if (expand) params.expand = expand;
+                if (fields) params.fields = fields;
+                return query.getOne(id, params);
+            },
             actualTimeout,
             `Failed to fetch ${collection} record - timeout`
         );

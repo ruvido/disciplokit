@@ -58,18 +58,15 @@ routerAdd("POST", "/api/telegram-callback", (e) => {
             return e.json(404, { "error": "User record not found" });
         }
         
-        // Set Telegram data
+        // Set Telegram data - combine first_name + last_name into name (consistent with widget flow)
+        const firstName = data.first_name || "";
+        const lastName = data.last_name || "";
+        const telegramName = (firstName + " " + lastName).trim();
+
         const telegramData = {
-            id: data.id.toString()
+            id: data.id.toString(),
+            name: telegramName
         };
-
-        if (data.first_name) {
-            telegramData.first_name = data.first_name;
-        }
-
-        if (data.last_name) {
-            telegramData.last_name = data.last_name;
-        }
 
         if (data.username) {
             telegramData.username = data.username;

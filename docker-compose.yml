@@ -48,3 +48,6 @@ services:
       - .env
     depends_on:
       - pocketbase
+    volumes:
+      - ./sveltekit/src:/app/src:ro  # Mount source files for live development
+      - ./sveltekit/static:/app/static:ro  # Mount static assets
