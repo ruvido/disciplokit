@@ -1,61 +1,5 @@
 # Disciplo MVP: Hyper-Focused Roadmap 🎯
 
-## 🏗️ **Priority #1: Database Schema Redesign** (MUST DO FIRST)
-
-### **New Clean Schema Design**
-
-#### **Platform Level (members collection)**
-```javascript
-members: {
-  id,
-  email,
-  name,
-  admin: false,        // Platform admin privileges
-  banned: false,       // Platform-wide ban (admin only)
-  telegram: {          // Telegram integration data
-    id: "",
-    username: "",
-    name: ""
-  },
-  data: {              // Custom signup form data
-    // Any custom fields from signup forms
-  },
-  created (auto),      // PocketBase auto timestamp
-  updated (auto)       // PocketBase auto timestamp
-}
-```
-
-#### **Group Level (group_members junction collection)**
-```javascript
-group_members: {
-  id,
-  member_id (relation to members),
-  group_id (relation to groups),
-  moderator: false,    // Group moderator privileges
-  status: "pending|active|left",  // Group participation flow
-  invited_by (relation to members, optional),
-  created (auto),      // When they joined/requested
-  updated (auto)       // Last status change
-}
-```
-
-### **Key Changes from Current Implementation**
-1. **Replace bidirectional arrays** with proper junction table
-2. **Move telegram data** from separate fields to `telegram` object
-3. **Platform-wide ban** in members (not group-specific)
-4. **Clean status flow** for group membership
-5. **Separate concerns**: Platform admin vs Group moderator
-
-### **Migration Tasks**
-- [ ] Create new `group_members` collection
-- [ ] Migrate existing member-group relationships
-- [ ] Update all PocketBase hooks to use new schema
-- [ ] Update frontend queries and components
-- [ ] Update bot logic for group member management
-- [ ] Remove old bidirectional array fields
-
----
-
 ## 🔥 **Critical MVP Features** (Absolutely Essential)
 
 ### **Core User Experience**
@@ -73,6 +17,16 @@ group_members: {
    - Edit name, email, telegram username
    - Update profile photo/avatar
    - Change password functionality
+
+4. **Update core logic for updated member user structure**
+   - i updated the collection member structure:
+   - telegram_name, telegram_id, telegram_username are removed
+   - when signup up hook should create data.telegram.name="" ecc unless they are fed as flag in the url
+   - added the groups array which points to groups collection listing the groups the member belongs to (so i added members collection in groups as well to list the members in the group;) -> is this approach best practice? we need to know who belongs to what
+
+4. **Dashboard onboarding flow** - Users go to groups page first
+   - if they are not connected to telegram (data.telegram is empty) then just show a big centered telegram login widget
+   - if they are connected to telegram -> show the list of groups
 
 ### **Admin-Controlled Onboarding**
 4. **User Signup Request Flow** - User requests signup → Admin email notification → Admin approval button → User welcome email
