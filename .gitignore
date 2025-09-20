@@ -3,3 +3,4 @@ env.bak
 pocketbase/pocketbase*
 pb_data
 *.bak
+node_modules

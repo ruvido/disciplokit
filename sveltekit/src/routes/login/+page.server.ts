@@ -51,12 +51,12 @@ export const actions: Actions = {
             return handlePocketBaseError(err, 'Login attempt');
         }
 
-        // Redirect based on user role
+        // Redirect based on user admin status
         const user = locals.pb.authStore.model;
-        if (user?.role === 'admin') {
+        if (user?.admin) {
             throw redirect(303, '/admin/dashboard');
         }
         
-        throw redirect(303, '/dashboard');
+        throw redirect(303, '/dashboard/groups');
     }
 };

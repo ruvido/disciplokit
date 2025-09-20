@@ -24,6 +24,6 @@ migrate((app) => {
     mrecord.set("email", adminEmail)
     mrecord.set("password", adminPassword)
     mrecord.set("emailVisibility", true)
-    mrecord.set("role", "admin")
+    mrecord.set("admin", true)
     app.save(mrecord)
 })

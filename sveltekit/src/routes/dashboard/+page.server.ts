@@ -6,10 +6,10 @@ export const load: PageServerLoad = async (event) => {
     const user = requireAuth(event);
 
     // Admins should go to admin dashboard
-    if (user.role === 'admin') {
+    if (user.admin) {
         throw redirect(303, '/admin/dashboard');
     }
 
     // Redirect to profile page as default
-    throw redirect(303, '/dashboard/profile');
+    throw redirect(303, '/dashboard/groups');
 };

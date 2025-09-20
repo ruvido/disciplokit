@@ -4,25 +4,26 @@ migrate((app) => {
     let collection = new Collection({
         type:     "auth",
         name:     "members",
-        listRule: "@request.auth.id != '' && @request.auth.role = 'admin'",
-        viewRule: "@request.auth.id != '' && @request.auth.role = 'admin'",
+        listRule: "@request.auth.id != ''",
+        viewRule: "@request.auth.id != ''",
         createRule: "",
-        updateRule: "@request.auth.id != '' && @request.auth.role = 'admin'",
-        deleteRule: "@request.auth.id != '' && @request.auth.role = 'admin'",
-        // listRule: "id = @request.auth.id",
-        // viewRule: "id = @request.auth.id",
-        // createRule: "",  // Allow public registration
-        // updateRule: "id = @request.auth.id",
-        // deleteRule: "id = @request.auth.id",
+        updateRule: "@request.auth.id != '' && @request.auth.admin= true",
+        deleteRule: "@request.auth.id != '' && @request.auth.admin = true",
         fields: [
+            // {
+            //     type:        "select",
+            //     name:        "role",
+            //     required:    true,
+            //     presentable: true,
+            //     maxSelect:   1,
+            //     default: "member",
+            //     values:      ["member", "moderator", "admin"],
+            // },
             {
-                type:        "select",
-                name:        "role",
+                type:        "bool",
+                name:        "admin",
                 required:    true,
-                presentable: true,
-                maxSelect:   1,
-                default: "member",
-                values:      ["member", "moderator", "admin"],
+                default:     false
             }, 
             {
                 "name": "created",

@@ -20,8 +20,8 @@
 	let isLoading = $state(false);
 	
 	const adminMenuItems = [
-		{ href: '/dashboard/profile', label: 'Profile' },
 		{ href: '/dashboard/groups', label: 'Groups' },
+		{ href: '/dashboard/profile', label: 'Profile' },
 		{ href: '/admin/dashboard', label: 'Members' }
 	];
 </script>
@@ -52,7 +52,7 @@
 				<div class="flex justify-between items-center">
 					<span class="text-sm text-muted-foreground">Admins</span>
 					<span class="text-lg font-semibold text-red-600">
-						{data.members?.filter(m => m.role === 'admin').length || 0}
+						{data.members?.filter(m => m.admin === true).length || 0}
 					</span>
 				</div>
 				<div class="flex justify-between items-center">
@@ -184,11 +184,9 @@
 										<span class="font-medium">
 											{member.name || member.email?.split('@')[0] || 'Unknown'}
 										</span>
-										{#if member.role !== 'member'}
-											<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
-												{member.role === 'admin' ? 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20' : 
-												 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20'}">
-												{member.role}
+										{#if member.admin}
+											<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20">
+												admin
 											</span>
 										{/if}
 									</div>

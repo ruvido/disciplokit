@@ -38,5 +38,5 @@ export const auth = createAuthStore();
 
 export const isAdmin = derived(
     auth,
-    $auth => $auth.user?.role === 'admin'
+    $auth => $auth.user?.admin === true
 );

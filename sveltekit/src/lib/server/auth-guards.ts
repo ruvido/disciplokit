@@ -12,30 +12,29 @@ export function requireAuth(event: RequestEvent, redirectTo = '/login') {
 }
 
 /**
- * Ensure user has specific role
- */
-export function requireRole(event: RequestEvent, allowedRoles: string[], redirectTo = '/login') {
-    const user = requireAuth(event, redirectTo);
-    
-    if (!allowedRoles.includes(user.role)) {
-        throw error(403, 'Access Denied');
-    }
-    
-    return user;
-}
-
-/**
- * Ensure user is admin
+ * Ensure user is admin (using admin boolean field)
  */
 export function requireAdmin(event: RequestEvent) {
-    return requireRole(event, ['admin']);
+    const user = requireAuth(event);
+
+    if (!user.admin) {
+        throw error(403, 'Access Denied - Admin rights required');
+    }
+
+    return user;
 }
 
 /**
  * Ensure user is admin or moderator
  */
 export function requireStaff(event: RequestEvent) {
-    return requireRole(event, ['admin', 'moderator']);
+    const user = requireAuth(event);
+
+    if (!user.admin) {
+        throw error(403, 'Access Denied - Staff rights required');
+    }
+
+    return user;
 }
 
 /**
@@ -48,10 +47,10 @@ export function getUser(event: RequestEvent) {
 /**
  * Redirect authenticated users away from auth pages
  */
-export function requireGuest(event: RequestEvent, redirectTo = '/dashboard/profile') {
+export function requireGuest(event: RequestEvent, redirectTo = '/dashboard/groups') {
     if (event.locals.user) {
         // Redirect admins to their specific dashboard
-        if (event.locals.user.role === 'admin') {
+        if (event.locals.user.admin) {
             throw redirect(303, '/admin/dashboard');
         }
         throw redirect(303, redirectTo);

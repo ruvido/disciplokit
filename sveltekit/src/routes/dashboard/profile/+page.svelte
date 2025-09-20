@@ -3,65 +3,32 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import MobileMenu from "$lib/components/mobile-menu.svelte";
-	import LoadingSpinner from "$lib/components/loading-spinner.svelte";
 	import ErrorBoundary from "$lib/components/error-boundary.svelte";
+	import LoadingSpinner from "$lib/components/loading-spinner.svelte";
 	import { page } from '$app/stores';
-	
+
 	interface Props {
 		data: PageData;
 	}
-	
+
 	let { data }: Props = $props();
-	let isLoading = $state(false);
-	let isGeneratingLink = $state(false);
-	let awaitingTelegramLink = $state(false);
-	
+
 	// Check if user has telegram linked
 	const isTelegramLinked = $derived(!!data.user?.telegram?.id);
-	const telegramData = $derived(data.user?.telegram || null);
 
-	
-	// Generate telegram link
-	async function generateTelegramLink() {
-		isGeneratingLink = true;
-		try {
-			const response = await fetch('/api/telegram-link', { method: 'POST' });
-			const result = await response.json();
-			
-			if (result.success) {
-				awaitingTelegramLink = true;
-				window.open(result.link, '_blank');
-			} else {
-				alert('Errore nella generazione del link: ' + result.error);
-			}
-		} catch (error) {
-			alert('Errore di connessione');
-		} finally {
-			isGeneratingLink = false;
-		}
-	}
+	// Loading state
+	let isLoading = $state(false);
 
-	// Refresh page data when user returns after linking (focus event)
-	if (typeof window !== 'undefined') {
-		window.addEventListener('focus', () => {
-			if (awaitingTelegramLink) {
-				console.log('🔄 User returned to page, refreshing data...');
-				awaitingTelegramLink = false;
-				window.location.reload();
-			}
-		});
-	}
-	
-	// Menu items based on user role
-	const menuItems = data.user?.role === 'admin' 
+	// Menu items based on user admin status
+	const menuItems = data.user?.admin
 		? [
-			{ href: '/dashboard/profile', label: 'Profile' },
 			{ href: '/dashboard/groups', label: 'Groups' },
+			{ href: '/dashboard/profile', label: 'Profile' },
 			{ href: '/admin/dashboard', label: 'Members' }
 		]
 		: [
-			{ href: '/dashboard/profile', label: 'Profile' },
-			{ href: '/dashboard/groups', label: 'Groups' }
+			{ href: '/dashboard/groups', label: 'Groups' },
+			{ href: '/dashboard/profile', label: 'Profile' }
 		];
 	
 	// Format date helper
@@ -102,10 +69,9 @@
 				<p class="text-muted-foreground">{data.user?.email}</p>
 				<div class="flex items-center justify-center gap-2 mt-2">
 					<span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
-						{data.user?.role === 'admin' ? 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20' : 
-						 data.user?.role === 'moderator' ? 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20' : 
+						{data.user?.admin ? 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20' :
 						 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'}">
-						{data.user?.role}
+						{data.user?.admin ? 'admin' : 'user'}
 					</span>
 					{#if data.user?.verified}
 						<span class="text-green-600 text-sm">Verified</span>
@@ -145,23 +111,19 @@
 			</Card.Root>
 		</div>
 
-		<!-- Telegram Integration -->
+		<!-- Telegram Integration Status -->
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="flex items-center gap-2">
 					<span class="text-lg">📱</span>
-					Integrazione Telegram
+					Telegram Integration
 				</Card.Title>
 				<Card.Description>
-					{isTelegramLinked 
-						? 'Il tuo account è collegato a Telegram' 
-						: 'Collega il tuo account Telegram per accedere ai gruppi della community'
-					}
+					Your Telegram connection status
 				</Card.Description>
 			</Card.Header>
-			<Card.Content class="space-y-4">
+			<Card.Content>
 				{#if isTelegramLinked}
-					<!-- Already linked -->
 					<div class="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
 						<div class="flex items-center gap-3">
 							<div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -171,46 +133,26 @@
 								<div class="font-medium text-green-800">
 									{data.user?.telegram?.name || 'Telegram User'}
 								</div>
-								<div class="text-sm text-green-600">
-									Collegato il {telegramData?.linked_at ? formatDate(telegramData.linked_at) : 'N/A'}
-								</div>
+								<div class="text-sm text-green-600">Connected</div>
 								{#if data.user?.telegram?.username}
 									<div class="text-xs text-green-500">@{data.user.telegram.username}</div>
 								{/if}
 							</div>
 						</div>
 					</div>
-					
-					<div class="text-sm text-muted-foreground p-3 bg-muted rounded-lg">
-						<strong>✅ Account collegato!</strong><br>
-						Ora puoi iscriverti ai gruppi Telegram disponibili dalla sezione Groups.
-					</div>
 				{:else}
-					<!-- Not linked yet -->
-					<div class="space-y-3">
-						<div class="text-sm text-muted-foreground">
-							<strong>Come funziona:</strong>
+					<div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+						<div class="flex items-center gap-3">
+							<div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+								<span class="text-yellow-600 font-semibold">⚠</span>
+							</div>
+							<div>
+								<div class="font-medium text-yellow-800">Not Connected</div>
+								<div class="text-sm text-yellow-600">
+									Telegram connection required for full access
+								</div>
+							</div>
 						</div>
-						<ol class="text-sm text-muted-foreground space-y-1 ml-4">
-							<li>1. Clicca su "Collega Telegram"</li>
-							<li>2. Si aprirà automaticamente Telegram</li>
-							<li>3. Il bot confermerà il collegamento</li>
-							<li>4. Torna qui per iscriverti ai gruppi</li>
-						</ol>
-						
-						<Button 
-							onclick={generateTelegramLink}
-							disabled={isGeneratingLink}
-							class="w-full"
-						>
-							{#if isGeneratingLink}
-								<LoadingSpinner message="" />
-								<span class="ml-2">Generando link...</span>
-							{:else}
-								<span class="mr-2">📱</span>
-								Collega Telegram
-							{/if}
-						</Button>
 					</div>
 				{/if}
 			</Card.Content>
@@ -228,7 +170,7 @@
 				</div>
 				<div class="flex justify-between items-center py-2 border-b border-border/50">
 					<span class="text-sm text-muted-foreground">Role</span>
-					<span class="text-sm font-medium capitalize">{data.user?.role}</span>
+					<span class="text-sm font-medium capitalize">{data.user?.admin ? 'admin' : 'user'}</span>
 				</div>
 				<div class="flex justify-between items-center py-2 border-b border-border/50">
 					<span class="text-sm text-muted-foreground">Status</span>

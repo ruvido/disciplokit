@@ -7,32 +7,39 @@ export const load: PageServerLoad = async ({ locals }) => {
     }
 
     try {
-        // Fetch all groups
-        const groups = await locals.pb.collection('groups').getFullList({
+        // Get user's groups via API
+        const myGroupsResponse = await fetch(`${locals.pb.baseURL}/api/my-groups`, {
+            headers: { 'Authorization': locals.pb.authStore.token }
+        });
+
+        const myGroupsData = await myGroupsResponse.json();
+        const userGroups = myGroupsData.success ? myGroupsData.groups || [] : [];
+
+        // Get all available groups
+        const allGroups = await locals.pb.collection('groups').getFullList({
             sort: '-created'
         });
 
-        // Check membership for current user
-        const groupsWithMembership = groups.map(group => ({
-            id: group.id,
-            name: group.name,
-            data: group.data || {},
-            members: group.members || [],
-            moderator: group.moderator,
-            created: group.created,
-            isMember: group.members && group.members.includes(locals.user.id),
-            isModerator: group.moderator === locals.user.id
-        }));
+        // Filter out groups user is already in
+        const userGroupIds = userGroups.map(g => g.id);
+        const availableGroups = allGroups.filter(g => !userGroupIds.includes(g.id));
 
         return {
-            groups: groupsWithMembership,
-            user: locals.user
+            user: locals.user,
+            userGroups,
+            availableGroups: availableGroups.map(group => ({
+                id: group.id,
+                name: group.name,
+                data: group.data || {},
+                created: group.created
+            }))
         };
     } catch (error) {
         console.error('Error loading groups:', error);
         return {
-            groups: [],
-            user: locals.user
+            user: locals.user,
+            userGroups: [],
+            availableGroups: []
         };
     }
 };
@@ -51,40 +58,24 @@ export const actions: Actions = {
         }
 
         try {
-            // Call PocketBase hook API (server-side)
-            const hookUrl = `${locals.pb.baseURL}/api/custom/create-invite-link`;
-            
-            const response = await fetch(hookUrl, {
+            const response = await fetch(`${locals.pb.baseURL}/api/join-group`, {
                 method: 'POST',
                 headers: {
+                    'Authorization': locals.pb.authStore.token,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    groupId: groupId,
-                    userId: locals.user.id
-                })
+                body: JSON.stringify({ groupId })
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                return fail(response.status, { error: errorData.error || 'Failed to create invite link' });
-            }
-
             const result = await response.json();
-            
-            if (!result.success || !result.invite_link) {
-                return fail(500, { error: 'Invalid hook response' });
+
+            if (result.success) {
+                return { success: true, message: result.message };
+            } else {
+                return fail(400, { error: result.error });
             }
-
-            return { 
-                success: true, 
-                message: 'Invite link created successfully',
-                invite_link: result.invite_link
-            };
-
         } catch (error) {
-            console.error('Error creating invite link:', error);
-            return fail(500, { error: 'Failed to create invite link' });
+            return fail(500, { error: 'Network error. Please try again.' });
         }
     },
 
@@ -101,27 +92,24 @@ export const actions: Actions = {
         }
 
         try {
-            // Get current group
-            const group = await locals.pb.collection('groups').getOne(groupId);
-            const currentMembers = group.members || [];
-
-            // Check if user is moderator (cannot leave)
-            if (group.moderator === locals.user.id) {
-                return fail(400, { error: 'Moderators cannot leave groups' });
-            }
-
-            // Remove user from members array
-            const updatedMembers = currentMembers.filter(memberId => memberId !== locals.user.id);
-
-            await locals.pb.collection('groups').update(groupId, {
-                members: updatedMembers
+            const response = await fetch(`${locals.pb.baseURL}/api/leave-group`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': locals.pb.authStore.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ groupId })
             });
 
-            return { success: true, message: 'Successfully left group' };
+            const result = await response.json();
 
+            if (result.success) {
+                return { success: true, message: result.message };
+            } else {
+                return fail(400, { error: result.error });
+            }
         } catch (error) {
-            console.error('Error leaving group:', error);
-            return fail(500, { error: 'Failed to leave group' });
+            return fail(500, { error: 'Network error. Please try again.' });
         }
     }
 };
