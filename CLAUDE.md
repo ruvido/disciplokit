@@ -7,6 +7,32 @@ Piattaforma di membership per Telegram con gestione centralizzata dei gruppi.
 - **Frontend**: SvelteKit
 - **Deploy**: Docker Compose + Caddy reverse proxy
 
+
+## STRICT CODE VERIFICATION PROTOCOL
+
+### MANDATORY RULE FOR ALL CODE EXAMPLES
+**NO CODE SHALL BE WRITTEN WITHOUT LITERAL VERIFICATION FROM OFFICIAL DOCS**
+
+1. **BEFORE writing any code**:
+   - Use WebFetch to get the EXACT example from official docs
+   - Copy the LITERAL syntax, don't modify or "improve" it
+   - If docs don't have the exact pattern needed, DON'T INVENT IT, but combine what's official to achieve the end result
+
+2. **VERIFICATION SOURCES (in order of priority)**:
+   - GitHub README examples: https://github.com/pocketbase/dart-sdk
+   - Official API docs: https://pocketbase.io/docs/
+   - JSVM docs: https://pocketbase.io/jsvm/
+   - Sveltekit docs: https://svelte.dev/docs/kit/introduction
+   - Shadcn-svelte: https://github.com/huntabyte/shadcn-svelte
+
+3. **FORBIDDEN PRACTICES**:
+   - ❌ Writing code from memory
+   - ❌ "Improving" official examples
+   - ❌ Mixing different SDK patterns
+   - ❌ Assuming API methods exist without verification
+
+
+
 ## Architettura
 
 ```

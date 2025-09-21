@@ -1,100 +1,164 @@
 # Disciplo MVP: Hyper-Focused Roadmap 🎯
 
-## 🔥 **Critical MVP Features** (Absolutely Essential)
+## 📊 **Implementation Status** (Current State)
 
-### **Core User Experience**
-1. **Password Reset Flow** - Mandatory for any real platform
-   - Email-based password reset workflow
-   - Secure token generation and validation
-   - User-friendly reset form
+### ✅ **COMPLETED FEATURES**
+- **Member Structure Updated** - New `telegram` JSON field, `admin` boolean, `banned` boolean
+- **Groups System** - Groups collection with moderator assignments
+- **Group Membership** - `group_members` collection for member-group relations
+- **Telegram Integration** - Bot flow, login widget, hooks for telegram linking
+- **Basic Dashboard** - Groups page with join/leave functionality
+- **Admin Detection** - Admin boolean in members, admin menu items
 
-2. **Email Verification** - Security essential
-   - Email verification on signup
-   - Resend verification email functionality
-   - Block unverified users from accessing platform
+### 🔄 **IN PROGRESS**
+- **Signup Flow** - Basic implementation exists, needs approval system integration
 
-3. **Profile Editing** - Users must edit basic info
-   - Edit name, email, telegram username
-   - Update profile photo/avatar
-   - Change password functionality
+### ❌ **CRITICAL MISSING** (MVP Blockers)
+- **Admin Approval Flow** - No signup request/admin approval system
+- **Email Verification** - Profile mentions verification but no flow implemented
+- **Password Reset Flow** - Only basic "forgot password" link exists, no implementation
+- **Profile Editing** - Profile page exists but no edit functionality
+- **Member Search (Admin)** - No admin dashboard for member management
 
-4. **Update core logic for updated member user structure**
-   - i updated the collection member structure:
-   - telegram_name, telegram_id, telegram_username are removed
-   - when signup up hook should create data.telegram.name="" ecc unless they are fed as flag in the url
-   - added the groups array which points to groups collection listing the groups the member belongs to (so i added members collection in groups as well to list the members in the group;) -> is this approach best practice? we need to know who belongs to what
+---
 
-4. **Dashboard onboarding flow** - Users go to groups page first
-   - if they are not connected to telegram (data.telegram is empty) then just show a big centered telegram login widget
-   - if they are connected to telegram -> show the list of groups
+## 🔥 **Priority Implementation Plan**
 
-### **Admin-Controlled Onboarding**
-4. **User Signup Request Flow** - User requests signup → Admin email notification → Admin approval button → User welcome email
-   - User submits signup request form
-   - Admin receives email notification with user details
-   - One-click approval/rejection buttons in email
-   - Automatic welcome email to approved users
-   - Admin dashboard to manage pending requests
+### **PHASE 1: Admin Approval Flow** (IMMEDIATE PRIORITY)
 
-5. **Basic Member Search** - Find members by email/name (admin only)
-   - Search members by email or name
-   - Filter by role (admin/moderator/member)
-   - Quick actions on search results
+#### **Database: New Collection - signup_requests**
+```javascript
+signup_requests: {
+  // Initial signup info (minimal barrier)
+  name: text,                    // Full name
+  email: email,                  // REQUIRED for communication
+  date_of_birth: date,           // Age verification
+  location: select([             // Italian regions + international
+    "Lombardia", "Lazio", "Campania", "Veneto", "Emilia-Romagna",
+    "Piemonte", "Sicilia", "Toscana", "Puglia", "Calabria",
+    "Sardegna", "Liguria", "Marche", "Abruzzo", "Friuli-Venezia Giulia",
+    "Trentino-Alto Adige", "Umbria", "Basilicata", "Molise",
+    "Valle d'Aosta", "Estero"
+  ]),
+  location_details: text,        // Only visible if location = "Estero"
+  relationship_status: select(["Celibe", "Sposato", "Fidanzato"]),
+  motivation: textarea,          // "Perché vuoi entrare nei gruppi"
 
-## 🎯 **Architecture Must-Haves** (Don't Ship Without These)
+  // Admin workflow
+  assigned_group: relation(groups),  // Admin assigns to local group
+  status: select(["pending", "assigned", "reviewed", "accepted"]),
+  created: date,
+  updated: date
+}
+```
+
+#### **Status Flow & Workflow**
+1. **User submits signup** → `status: "pending"` + notify admin
+2. **Admin assigns to group** → `status: "assigned"` + notify group moderator
+3. **Moderator approves** → `status: "reviewed"` + notify admin
+4. **Admin final approval** → `status: "accepted"` + send completion link + create member
+
+#### **Notification System**
+1. **New signup request** → Email admin with user details
+2. **Admin assigns to group** → Email/Telegram group moderator
+3. **Moderator approves** → Email admin "member ready for approval"
+4. **Admin final approval** → Email user with account completion link
+
+#### **UI Components Required**
+- **Simplified Signup Form** - Only essential info, low barrier
+- **Admin Dashboard** - Pending requests + group assignment dropdown
+- **Moderator Dashboard** - Assigned requests + approval button
+- **Account Completion Flow** - Password + telegram + other existing fields
+
+#### **Post-Approval Account Completion**
+After admin final approval → User receives email with secure completion link:
+- **Set Password** (required for login)
+- **Connect Telegram** (existing widget/bot flow)
+- **Additional Profile Info** (any other current signup requirements)
+- **Create Member Record** + delete signup_request
+
+---
+
+### **PHASE 2: Email Verification** (NEXT PRIORITY)
+
+#### **Email Verification Flow**
+- Email verification tokens and validation
+- Resend verification email functionality
+- Block unverified users from accessing platform
+- Integration with existing member creation
+
+---
+
+### **PHASE 3: Core User Features** (LOWER PRIORITY)
+
+#### **Password Reset Flow**
+- Email-based password reset workflow
+- Secure token generation and validation
+- User-friendly reset form
+
+#### **Profile Editing**
+- Edit name, email, basic info
+- Change password functionality
+- Update telegram connection
+
+#### **Member Search (Admin)**
+- Search members by email/name
+- Filter by role (admin/moderator/member)
+- Quick actions on search results
+
+---
+
+## 🎯 **PHASE 4: Infrastructure & Performance** (PRODUCTION READY)
 
 ### **Security & Reliability**
-6. **API Rate Limiting** - Prevent abuse attacks
-   - Implement rate limiting middleware
-   - Different limits for auth vs data endpoints
-   - IP-based limiting with proper headers
-
-7. **Database Backup Strategy** - Don't lose data
-   - Automated daily backups
-   - Backup verification process
-   - Easy restore procedure
-
-8. **Error Tracking** - Know when things break
-   - Centralized error logging
-   - Error alerting for critical issues
-   - User-friendly error pages
+- **API Rate Limiting** - Prevent abuse attacks
+- **Database Backup Strategy** - Automated daily backups
+- **Error Tracking** - Centralized error logging and alerting
+- **Database Indexing** - Optimize member/group lookups
 
 ### **Performance**
-9. **Basic Caching** - Cache expensive PocketBase queries
-   - Cache member lists and group data
-   - Implement cache invalidation strategy
-   - Redis or in-memory caching
-
-10. **Database Indexing** - Speed up member/group lookups
-    - Index on email, telegram_id, telegram_username
-    - Index on member role and status
-    - Index on group names and IDs
-
-## 📊 **Essential Metrics** (Minimum Viable Analytics)
-
-11. **Member Growth Dashboard** - Track signups over time
-    - Weekly/monthly signup trends
-    - Member status breakdown (pending/active/inactive)
-    - Group membership statistics
+- **Basic Caching** - Cache expensive PocketBase queries
+- **Member Growth Analytics** - Track signup trends and statistics
 
 ---
 
-## **Implementation Priority**
+## 🎯 **Success Criteria**
 
-### **Phase 1: Security & Stability**
-- Items 6, 7, 8, 10 (Rate limiting, backups, error tracking, indexing)
+### **Phase 1 Complete** (Admin Approval MVP)
+✅ Platform can handle secure member approval workflow
+✅ Admins can assign new members to local groups
+✅ Moderators can approve/reject assigned members
+✅ Automated notification system works end-to-end
+✅ Account completion flow creates full member accounts
 
-### **Phase 2: Core User Features**
-- Items 1, 2, 3 (Password reset, email verification, profile editing)
+### **Phase 2 Complete** (Email Verification)
+✅ All members have verified email addresses
+✅ Unverified users blocked from platform access
 
-### **Phase 3: Admin Experience**
-- Items 4, 5, 11 (Signup flow, member search, analytics)
-
-### **Phase 4: Performance**
-- Item 9 (Caching)
+### **Full MVP Complete**
+✅ Platform ready for 100+ member community
+✅ Secure authentication with password reset
+✅ Complete admin tools for member management
+✅ Production-grade security and monitoring
 
 ---
 
-**Hyper-Focused MVP**: 11 features total. Each one solves a critical pain point that blocks real production usage. Perfect for exclusive communities where admins want to vet every member.
+## 📋 **Next Actions**
 
-**Success Criteria**: Platform can handle 100+ members with admin approval workflow, secure authentication, and basic analytics.
+### **Immediate (Start Now)**
+1. Create `signup_requests` PocketBase collection
+2. Build simplified signup form
+3. Create admin dashboard for request management
+4. Implement notification hooks
+
+### **This Week**
+- Complete admin approval flow
+- Test end-to-end workflow
+- Build moderator approval interface
+
+### **Next Week**
+- Email verification system
+- Account completion flow
+- Testing and polish
+
+**Focus**: One phase at a time, ship working features incrementally.
