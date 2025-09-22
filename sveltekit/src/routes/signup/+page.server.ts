@@ -97,8 +97,32 @@ export const actions: Actions = {
         } catch (error: any) {
             console.error('Signup request creation error:', error);
             console.error('Error details:', JSON.stringify(error, null, 2));
+
+            // Check for unique constraint violation on email
+            let errorMessage = 'Errore durante l\'invio della richiesta';
+
+            const errorString = JSON.stringify(error, null, 2).toLowerCase();
+
+            // Check for various forms of unique constraint errors
+            if (errorString.includes('unique') ||
+                errorString.includes('duplicate') ||
+                errorString.includes('email') && (errorString.includes('constraint') || errorString.includes('already exists')) ||
+                (error.data?.message && error.data.message.toLowerCase().includes('email')) ||
+                (error.data?.message && error.data.message.toLowerCase().includes('unique')) ||
+                (error.data?.message && error.data.message.toLowerCase().includes('duplicate')) ||
+                (error.message && error.message.toLowerCase().includes('email')) ||
+                (error.message && error.message.toLowerCase().includes('unique')) ||
+                errorString.includes('failed to create record') && errorString.includes('email')) {
+
+                errorMessage = 'Questa email è già stata utilizzata per una richiesta di iscrizione. Controlla la tua casella email o contatta il supporto.';
+            } else if (error.data?.message) {
+                errorMessage = error.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             return fail(400, {
-                error: error.data?.message || error.message || 'Errore durante l\'invio della richiesta',
+                error: errorMessage,
                 formData: Object.fromEntries(formData)
             });
         }

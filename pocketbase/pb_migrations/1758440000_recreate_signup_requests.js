@@ -24,7 +24,11 @@ migrate((app) => {
       {
         type: "email",
         name: "email",
-        required: true
+        required: true,
+        options: {
+          exceptDomains: null,
+          onlyDomains: null
+        }
       },
       {
         type: "number",
