@@ -1,0 +1,65 @@
+{
+	"/": [
+		"src/routes/+page.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin/dashboard": [
+		"src/routes/admin/dashboard/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/api/invite-link/[groupId]": [
+		"src/routes/api/invite-link/[groupId]/+server.ts"
+	],
+	"/api/telegram-callback": [
+		"src/routes/api/telegram-callback/+server.ts"
+	],
+	"/api/telegram-link": [
+		"src/routes/api/telegram-link/+server.ts"
+	],
+	"/dashboard": [
+		"src/routes/dashboard/+page.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/dashboard/connect-telegram": [
+		"src/routes/dashboard/connect-telegram/+page.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/dashboard/groups": [
+		"src/routes/dashboard/groups/+page.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/dashboard/join-default-group": [
+		"src/routes/dashboard/join-default-group/+page.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/dashboard/profile": [
+		"src/routes/dashboard/profile/+page.server.ts",
+		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/login-01": [
+		"src/routes/+layout.server.ts"
+	],
+	"/login": [
+		"src/routes/login/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/signout": [
+		"src/routes/signout/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/signup-success": [
+		"src/routes/+layout.server.ts"
+	],
+	"/signup": [
+		"src/routes/signup/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	]
+}

@@ -9,6 +9,7 @@
 - **Telegram Integration** - Bot flow, login widget, hooks for telegram linking
 - **Basic Dashboard** - Groups page with join/leave functionality
 - **Admin Detection** - Admin boolean in members, admin menu items
+- **Signup Requests Collection** - Complete database schema with proper field types
 
 ### 🔄 **IN PROGRESS**
 - **Signup Flow** - Basic implementation exists, needs approval system integration
@@ -26,7 +27,7 @@
 
 ### **PHASE 1: Admin Approval Flow** (IMMEDIATE PRIORITY)
 
-#### **Database: New Collection - signup_requests**
+#### **Database: ✅ Collection - signup_requests** (COMPLETED)
 ```javascript
 signup_requests: {
   // Initial signup info (minimal barrier)
@@ -42,15 +43,15 @@ signup_requests: {
   ]),
   location_details: text,        // Only visible if location = "Estero"
   relationship_status: select(["Celibe", "Sposato", "Fidanzato"]),
-  motivation: textarea,          // "Perché vuoi entrare nei gruppi"
+  motivation: editor,            // "Perché vuoi entrare nei gruppi"
 
   // Admin workflow
   assigned_group: relation(groups),  // Admin assigns to local group
   status: select(["pending", "assigned", "reviewed", "accepted"]),
-  created: date,
-  updated: date
+  // Auto-generated: created, updated
 }
 ```
+**✅ IMPLEMENTED**: PocketBase collection created with all field types, validation rules, and access permissions.
 
 #### **Status Flow & Workflow**
 1. **User submits signup** → `status: "pending"` + notify admin
@@ -145,20 +146,22 @@ After admin final approval → User receives email with secure completion link:
 
 ## 📋 **Next Actions**
 
+### **✅ COMPLETED**
+1. ~~Create `signup_requests` PocketBase collection~~ - **DONE**
+
 ### **Immediate (Start Now)**
-1. Create `signup_requests` PocketBase collection
-2. Build simplified signup form
-3. Create admin dashboard for request management
-4. Implement notification hooks
+2. **Build simplified signup form** - Create `/signup-request` page with new fields
+3. **Update existing signup to redirect** - Point current signup to new approval flow
+4. **Create admin dashboard for request management** - List pending requests with assign action
 
 ### **This Week**
-- Complete admin approval flow
-- Test end-to-end workflow
-- Build moderator approval interface
+- **Build moderator approval interface** - Dashboard for moderators to approve assigned requests
+- **Implement notification hooks** - Email/Telegram notifications for workflow steps
+- **Test end-to-end workflow** - Complete signup → admin assign → moderator approve → member creation
 
 ### **Next Week**
-- Email verification system
-- Account completion flow
-- Testing and polish
+- **Account completion flow** - Post-approval password setup + telegram connection
+- **Email verification system** - Verify emails during account completion
+- **Polish and testing** - UI improvements and workflow testing
 
-**Focus**: One phase at a time, ship working features incrementally.
+**Current Focus**: Frontend signup form using new `signup_requests` collection.

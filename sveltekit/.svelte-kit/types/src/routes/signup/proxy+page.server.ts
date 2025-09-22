@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url, locals }) => {
+export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
     // Load simple signup config
     try {
         const pocketbaseUrl = process.env.POCKETBASE_URL;
@@ -29,8 +30,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     throw redirect(303, '/login');
 };
 
-export const actions: Actions = {
-    default: async ({ request, locals }) => {
+export const actions = {
+    default: async ({ request, locals }: import('./$types').RequestEvent) => {
         const formData = await request.formData();
 
         // Load config to get field validation
@@ -107,4 +108,4 @@ export const actions: Actions = {
         const redirectUrl = signupConfig.completion?.redirect || '/signup-success';
         throw redirect(303, redirectUrl);
     }
-};
+};;null as any as Actions;

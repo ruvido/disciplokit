@@ -24,6 +24,20 @@
 	
 	// Simple value handling
 	let displayValue = value || '';
+
+	// Autocomplete mapping for better UX
+	function getAutocomplete(fieldName: string, fieldType: string): string {
+		const autocompleteMap: Record<string, string> = {
+			name: 'name',
+			email: 'email',
+			birth_year: 'off',
+			location: 'off',
+			relationship_status: 'off',
+			motivation: 'off',
+			password: 'new-password'
+		};
+		return autocompleteMap[fieldName] || 'off';
+	}
 </script>
 
 <div class="space-y-2">
@@ -43,6 +57,7 @@
 			value={displayValue}
 			required={field.required}
 			disabled={disabled}
+			autocomplete={getAutocomplete(field.name, field.type)}
 		/>
 	{:else if field.type === 'number'}
 		<Input
@@ -55,6 +70,7 @@
 			max={field.max}
 			required={field.required}
 			disabled={disabled}
+			autocomplete={getAutocomplete(field.name, field.type)}
 		/>
 	{:else if field.type === 'password'}
 		<Input
@@ -64,6 +80,17 @@
 			placeholder={field.placeholder}
 			required={field.required}
 			disabled={disabled}
+			autocomplete={getAutocomplete(field.name, field.type)}
+		/>
+	{:else if field.type === 'date'}
+		<Input
+			id={field.name}
+			name={field.name}
+			type="date"
+			value={displayValue}
+			required={field.required}
+			disabled={disabled}
+			autocomplete={getAutocomplete(field.name, field.type)}
 		/>
 	{:else if field.type === 'select'}
 		<select

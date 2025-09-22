@@ -27,9 +27,11 @@ migrate((app) => {
         required: true
       },
       {
-        type: "date",
-        name: "date_of_birth",
-        required: true
+        type: "number",
+        name: "birth_year",
+        required: true,
+        min: 1930,
+        max: 2007
       },
       {
         type: "select",
@@ -76,7 +78,23 @@ migrate((app) => {
         required: true,
         maxSelect: 1,
         values: ["pending", "assigned", "reviewed", "accepted"]
-      }
+      },
+      {
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+    }, 
+    {
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+    }
     ]
   });
   app.save(collection);
