@@ -264,6 +264,47 @@ class Config {
             return false;
         }
     }
+
+    async generateSignupToken(telegramUser, groupName) {
+        try {
+            // Import crypto for secure token generation
+            const crypto = require('crypto');
+
+            // Generate cryptographically secure random token
+            const token = crypto.randomBytes(32).toString('hex');
+
+            // Create SHA-256 hash of token for storage (security best practice)
+            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+            // Set expiration to 24 hours from now
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+            // Authenticate as admin first
+            await this.pb.admins.authWithPassword(
+                process.env.POCKETBASE_ADMIN_EMAIL,
+                process.env.POCKETBASE_ADMIN_PASSWORD
+            );
+
+            // Create record in telegram_invite_tokens collection
+            const record = await this.pb.collection('telegram_invite_tokens').create({
+                token_hash: tokenHash,
+                telegram_user_id: telegramUser.id,
+                telegram_first_name: telegramUser.first_name,
+                telegram_last_name: telegramUser.last_name || "",
+                telegram_username: telegramUser.username || "",
+                group_name: groupName,
+                status: "pending",
+                expires_at: expiresAt
+            });
+
+            console.log(`✅ Signup token created: ${tokenHash.substring(0, 16)}... for user ${telegramUser.id}`);
+            return token; // Return raw token (not hash) for the signup link
+
+        } catch (error) {
+            console.error('❌ Error generating signup token:', error);
+            return null;
+        }
+    }
 }
 
 module.exports = Config;

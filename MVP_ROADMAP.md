@@ -10,9 +10,15 @@
 - **Basic Dashboard** - Groups page with join/leave functionality
 - **Admin Detection** - Admin boolean in members, admin menu items
 - **Signup Requests Collection** - Complete database schema with proper field types
+- **Config-driven Signup System** - Dynamic signup forms based on database configurations
+- **Form Validation & UX** - Complete validation, Italian error messages, accessibility features
+- **Email Uniqueness Constraints** - Unique indexes on email for signup_requests and members
+- **UTF-8 Support in PocketBase** - Proper handling of accented characters in hooks
+- **Options Reference System** - Dynamic dropdown menus loaded from database (regions, hobbies, etc.)
+- **Signup-Direct Strategy** - Bot-initiated signup with telegram prefill and direct member creation
 
 ### 🔄 **IN PROGRESS**
-- **Signup Flow** - Basic implementation exists, needs approval system integration
+- **Admin Approval Workflow** - Signup form completed, needs admin/moderator approval system integration
 
 ### ❌ **CRITICAL MISSING** (MVP Blockers)
 - **Admin Approval Flow** - No signup request/admin approval system
@@ -23,27 +29,54 @@
 
 ---
 
+## 🚀 **SIGNUP-DIRECT STRATEGY** (COMPLETED)
+
+### **✅ Architecture & Implementation**
+- **Token-based Signup Flow** - Secure signup links with Telegram user prefill
+- **Database Migration** - `telegram_invite_tokens` collection for token management
+- **Bot Integration** - Automatic token generation when users join Telegram groups
+- **SvelteKit Integration** - URL parameter parsing and form prefilling
+- **Security Implementation** - SHA-256 token hashing and 24-hour expiration
+- **Collection Targeting** - Direct member creation (bypasses approval workflow)
+- **Cleanup System** - Automatic removal of expired tokens via PocketBase hooks
+
+### **✅ Completed Components**
+1. **Bot Token Generation** - `config.js:generateSignupToken()` with crypto security
+2. **Chat Member Handling** - Automatic token creation for new group members
+3. **Server-side Validation** - Token verification and user data extraction
+4. **Frontend Prefill** - Name field automatically populated from Telegram data
+5. **Member Creation** - Direct insertion into `members` collection with telegram data
+6. **Token Management** - Status tracking (pending → used) and cleanup automation
+
+### **🔗 Flow Summary**
+1. User joins Telegram group → Bot detects new member
+2. Bot generates secure token → Sends signup link via private message
+3. User clicks link → SvelteKit loads form with prefilled Telegram data
+4. User completes form → Member created directly + token marked as used
+5. System cleanup → Expired tokens automatically removed
+
+---
+
 ## 🔥 **Priority Implementation Plan**
 
 ### **PHASE 1: Admin Approval Flow** (IMMEDIATE PRIORITY)
 
-#### **Database: ✅ Collection - signup_requests** (COMPLETED)
+#### **Database: ✅ Collection - signup_requests** (COMPLETED & FUNCTIONAL)
 ```javascript
 signup_requests: {
   // Initial signup info (minimal barrier)
   name: text,                    // Full name
-  email: email,                  // REQUIRED for communication
-  date_of_birth: date,           // Age verification
-  location: select([             // Italian regions + international
-    "Lombardia", "Lazio", "Campania", "Veneto", "Emilia-Romagna",
-    "Piemonte", "Sicilia", "Toscana", "Puglia", "Calabria",
-    "Sardegna", "Liguria", "Marche", "Abruzzo", "Friuli-Venezia Giulia",
-    "Trentino-Alto Adige", "Umbria", "Basilicata", "Molise",
-    "Valle d'Aosta", "Estero"
+  email: email (UNIQUE),         // REQUIRED for communication, unique constraint
+  birth_year: number,            // Age verification (1930-2007 range)
+  location: select([             // Italian regions + international (loaded from signup-options)
+    "Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna",
+    "Friuli-Venezia Giulia", "Lazio", "Liguria", "Lombardia", "Marche",
+    "Molise", "Piemonte", "Puglia", "Sardegna", "Sicilia", "Toscana",
+    "Trentino-Alto Adige", "Umbria", "Valle d'Aosta", "Veneto", "Estero"
   ]),
   location_details: text,        // Only visible if location = "Estero"
   relationship_status: select(["Celibe", "Sposato", "Fidanzato"]),
-  motivation: editor,            // "Perché vuoi entrare nei gruppi"
+  motivation: textarea,          // "Perché vuoi entrare nei gruppi" (500 char limit)
 
   // Admin workflow
   assigned_group: relation(groups),  // Admin assigns to local group
@@ -51,7 +84,7 @@ signup_requests: {
   // Auto-generated: created, updated
 }
 ```
-**✅ IMPLEMENTED**: PocketBase collection created with all field types, validation rules, and access permissions.
+**✅ IMPLEMENTED**: PocketBase collection created with all field types, validation rules, access permissions, and unique email constraint. Frontend form fully functional with Italian error messages and accessibility features.
 
 #### **Status Flow & Workflow**
 1. **User submits signup** → `status: "pending"` + notify admin
@@ -148,11 +181,14 @@ After admin final approval → User receives email with secure completion link:
 
 ### **✅ COMPLETED**
 1. ~~Create `signup_requests` PocketBase collection~~ - **DONE**
+2. ~~Build simplified signup form~~ - **DONE** - `/signup` page with full validation
+3. ~~Implement config-driven form system~~ - **DONE** - Dynamic forms from database
+4. ~~Add email uniqueness constraints~~ - **DONE** - Prevents duplicate signups
+5. ~~Italian error messages and UX~~ - **DONE** - Complete user experience
 
 ### **Immediate (Start Now)**
-2. **Build simplified signup form** - Create `/signup-request` page with new fields
-3. **Update existing signup to redirect** - Point current signup to new approval flow
-4. **Create admin dashboard for request management** - List pending requests with assign action
+6. **Create admin dashboard for request management** - List pending requests with assign action
+7. **Update existing signup to redirect** - Point current signup to new approval flow (if needed)
 
 ### **This Week**
 - **Build moderator approval interface** - Dashboard for moderators to approve assigned requests

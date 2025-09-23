@@ -15,6 +15,11 @@
 	const formData = $derived(() => {
 		const result: Record<string, any> = {};
 
+		// Start with prefill data from server (for direct signup)
+		if (data.prefillData) {
+			Object.assign(result, data.prefillData);
+		}
+
 		// Override with form data from server (in case of validation errors)
 		if (form?.formData) {
 			Object.assign(result, form.formData);
