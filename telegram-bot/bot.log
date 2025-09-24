@@ -1,0 +1,37 @@
+✅ ENV e Config importati
+🔧 Creando istanza Config...
+🔗 Connecting to PocketBase at: http://localhost:8090
+✅ Config istanziata, PocketBase connesso
+🚀 Disciplo Telegram Bot Starting...
+🌐 Bot HTTP server running on port 3030
+🔄 Syncing groups for user test123 (Telegram: 123456789)
+📋 Getting all groups from PocketBase...
+🔗 URL: http://localhost:8090/api/custom/get-groups
+🔑 Token: 6fe2d3ee901f0ff2
+⏰ Timestamp: 1758731525526
+❌ PocketBase get groups API error: {
+  data: {},
+  message: "Something went wrong while processing your request.",
+  status: 400,
+}
+❌ Error syncing user groups: 85 | 
+86 |         // Get all groups from PocketBase via custom API
+87 |         const groups = await config.getAllGroups()
+88 | 
+89 |         if (!groups) {
+90 |             throw new Error('Failed to fetch groups from PocketBase')
+                       ^
+error: Failed to fetch groups from PocketBase
+      at <anonymous> (/home/ruvido/dev/disciplokit/telegram-bot/index.js:90:19)
+
+🛑 Stopping bot...
+❌ Launch failed: 243 |         body.pipe(response);
+244 |     });
+245 |     return true;
+246 | }
+247 | function redactToken(error) {
+248 |     error.message = error.message.replace(/\/(bot|user)(\d+):[^/]+\//, '/$1$2:[REDACTED]/');
+          ^
+TypeError: Attempted to assign to readonly property.
+      at redactToken (/home/ruvido/dev/disciplokit/telegram-bot/node_modules/telegraf/lib/core/network/client.js:248:5)
+
