@@ -3,12 +3,19 @@ const PocketBase = require('pocketbase').default;
 class Config {
     constructor() {
         // Prefer POCKETBASE_URL, fallback to HOST:PORT for compatibility
-        const pocketbaseUrl = process.env.POCKETBASE_URL ||
-                             `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
-
+        let pocketbaseUrl = process.env.POCKETBASE_URL;
+        
         if (!pocketbaseUrl) {
-            console.error('❌ POCKETBASE_URL or HOST+POCKETBASE_PORT environment variables are required');
-            process.exit(1);
+            const host = process.env.HOST;
+            const port = process.env.POCKETBASE_PORT;
+            
+            if (!host || !port) {
+                console.error('❌ POCKETBASE_URL or both HOST and POCKETBASE_PORT environment variables are required');
+                console.error('❌ Current values: HOST=' + (host || 'undefined') + ', POCKETBASE_PORT=' + (port || 'undefined'));
+                process.exit(1);
+            }
+            
+            pocketbaseUrl = `http://${host}:${port}`;
         }
 
         this.pb = new PocketBase(pocketbaseUrl);
@@ -209,6 +216,178 @@ class Config {
         }
     }
 
+    async findUserByTelegramId(telegramId) {
+        try {
+            const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                                 `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
+            const endpoint = '/api/custom/find-user-by-telegram';
+            const secret = process.env.TELEGRAM_LINK_SECRET;
+
+            if (!pocketbaseUrl || !secret) {
+                console.error('❌ Missing PocketBase configuration for find user');
+                return null;
+            }
+
+            // Generate HMAC token for security
+            const timestamp = Date.now();
+            const data = `${telegramId}_${timestamp}`;
+            const crypto = require('crypto');
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(data);
+            const token = hmac.digest('hex').substring(0, 16);
+            
+            console.log(`🔍 Finding user by Telegram ID: ${telegramId}`);
+            
+            const response = await fetch(`${pocketbaseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Sync-Token': token
+                },
+                body: JSON.stringify({
+                    telegram_id: telegramId.toString(),
+                    timestamp: timestamp
+                })
+            });
+            
+            if (!response.ok) {
+                console.log(`❌ User not found for Telegram ID: ${telegramId}`);
+                return null;
+            }
+            
+            const result = await response.json();
+            console.log(`✅ User found: ${result.id} for Telegram ID: ${telegramId}`);
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error finding user by Telegram ID:', error);
+            return null;
+        }
+    }
+
+    async addToGroupMembers(groupId, userId, moderator = false) {
+        try {
+            const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                                 `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
+            const endpoint = '/api/custom/add-group-member';
+            const secret = process.env.TELEGRAM_LINK_SECRET;
+
+            if (!pocketbaseUrl || !secret) {
+                console.error('❌ Missing PocketBase configuration for add group member');
+                return false;
+            }
+
+            // Generate HMAC token for security
+            const timestamp = Date.now();
+            const data = `${userId}_${groupId}_${timestamp}`;
+            const crypto = require('crypto');
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(data);
+            const token = hmac.digest('hex').substring(0, 16);
+            
+            console.log(`👥 Adding user ${userId} to group ${groupId} (moderator: ${moderator})`);
+            
+            const response = await fetch(`${pocketbaseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Sync-Token': token
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    group_id: groupId,
+                    moderator: moderator,
+                    timestamp: timestamp
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('❌ PocketBase add group member API error:', error);
+                return false;
+            }
+            
+            const result = await response.json();
+            console.log(`✅ User added to group successfully:`, result);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error adding user to group:', error);
+            return false;
+        }
+    }
+
+    generateSecureGroupToken(groupId) {
+        try {
+            const secret = process.env.TELEGRAM_LINK_SECRET;
+            const timestamp = Date.now();
+            const data = `group_signup_${groupId}_${timestamp}`;
+            
+            const crypto = require('crypto');
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(data);
+            const token = hmac.digest('hex').substring(0, 32); // Token più lungo per group signup
+            
+            console.log(`🔑 Generated secure group token for group ${groupId}`);
+            return `${token}_${timestamp}`;
+        } catch (error) {
+            console.error('❌ Error generating group token:', error);
+            return null;
+        }
+    }
+
+    async getAllGroups() {
+        try {
+            const pocketbaseUrl = process.env.POCKETBASE_URL ||
+                                 `http://${process.env.HOST}:${process.env.POCKETBASE_PORT}`;
+            const endpoint = '/api/custom/get-groups';
+            const secret = process.env.TELEGRAM_LINK_SECRET;
+
+            if (!pocketbaseUrl || !secret) {
+                console.error('❌ Missing PocketBase configuration for get groups');
+                return null;
+            }
+
+            // Generate HMAC token for security
+            const timestamp = Date.now();
+            const data = `get_groups_${timestamp}`;
+            const crypto = require('crypto');
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(data);
+            const token = hmac.digest('hex').substring(0, 16);
+            
+            console.log(`📋 Getting all groups from PocketBase...`);
+            console.log(`🔗 URL: ${pocketbaseUrl}${endpoint}`);
+            console.log(`🔑 Token: ${token}`);
+            console.log(`⏰ Timestamp: ${timestamp}`);
+            
+            const response = await fetch(`${pocketbaseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Sync-Token': token
+                },
+                body: JSON.stringify({
+                    timestamp: timestamp
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('❌ PocketBase get groups API error:', error);
+                return null;
+            }
+            
+            const result = await response.json();
+            console.log(`✅ Retrieved ${result.total} groups from PocketBase`);
+            return result.groups;
+            
+        } catch (error) {
+            console.error('❌ Error getting groups from PocketBase:', error);
+            return null;
+        }
+    }
+
     async syncTelegramGroup(groupInfo) {
         try {
             const pocketbaseUrl = process.env.POCKETBASE_URL ||
@@ -265,46 +444,6 @@ class Config {
         }
     }
 
-    async generateSignupToken(telegramUser, groupName) {
-        try {
-            // Import crypto for secure token generation
-            const crypto = require('crypto');
-
-            // Generate cryptographically secure random token
-            const token = crypto.randomBytes(32).toString('hex');
-
-            // Create SHA-256 hash of token for storage (security best practice)
-            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-
-            // Set expiration to 24 hours from now
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-            // Authenticate as admin first
-            await this.pb.admins.authWithPassword(
-                process.env.POCKETBASE_ADMIN_EMAIL,
-                process.env.POCKETBASE_ADMIN_PASSWORD
-            );
-
-            // Create record in telegram_invite_tokens collection
-            const record = await this.pb.collection('telegram_invite_tokens').create({
-                token_hash: tokenHash,
-                telegram_user_id: telegramUser.id,
-                telegram_first_name: telegramUser.first_name,
-                telegram_last_name: telegramUser.last_name || "",
-                telegram_username: telegramUser.username || "",
-                group_name: groupName,
-                status: "pending",
-                expires_at: expiresAt
-            });
-
-            console.log(`✅ Signup token created: ${tokenHash.substring(0, 16)}... for user ${telegramUser.id}`);
-            return token; // Return raw token (not hash) for the signup link
-
-        } catch (error) {
-            console.error('❌ Error generating signup token:', error);
-            return null;
-        }
-    }
 }
 
 module.exports = Config;

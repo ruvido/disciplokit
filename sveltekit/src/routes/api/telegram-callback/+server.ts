@@ -70,6 +70,34 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			}
 
 			console.log(`✅ SUCCESS: Updated user ${userId} with Telegram ID: ${authData.id}`);
+			
+			// Trigger auto-sync groups via bot API
+			console.log('🔄 Triggering group auto-sync...');
+			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT || 3030}`;
+			
+			try {
+				const syncResponse = await fetch(`${botUrl}/sync-user-groups`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						user_id: userId,
+						telegram_id: authData.id
+					})
+				});
+				
+				const syncResult = await syncResponse.json();
+				console.log(`🔄 Group sync result:`, syncResult);
+				
+				if (syncResult.success) {
+					console.log(`✅ User auto-synced to ${syncResult.groups_added.length} groups`);
+				}
+				
+			} catch (syncError) {
+				console.error('⚠️  Group sync failed (non-critical):', syncError.message);
+				// Continue anyway - sync failure shouldn't break linking
+			}
 
 			return json({
 				success: true,
