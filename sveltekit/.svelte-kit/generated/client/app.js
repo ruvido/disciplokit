@@ -15,24 +15,27 @@ export const nodes = [
 	() => import('./nodes/11'),
 	() => import('./nodes/12'),
 	() => import('./nodes/13'),
-	() => import('./nodes/14')
+	() => import('./nodes/14'),
+	() => import('./nodes/15'),
+	() => import('./nodes/16'),
+	() => import('./nodes/17')
 ];
 
-export const server_loads = [0,2];
+export const server_loads = [0,2,3,4,5];
 
 export const dictionary = {
-		"/": [~3],
-		"/admin/dashboard": [~4],
-		"/dashboard": [~5,[2]],
-		"/dashboard/connect-telegram": [~6,[2]],
-		"/dashboard/groups": [~7,[2]],
-		"/dashboard/join-default-group": [~8,[2]],
-		"/dashboard/profile": [~9,[2]],
-		"/login-01": [11],
-		"/login": [~10],
-		"/signout": [~12],
-		"/signup-success": [14],
-		"/signup": [~13]
+		"/": [~6],
+		"/admin/dashboard": [~7,[2]],
+		"/connect-telegram": [~8,[3]],
+		"/dashboard": [~9,[4]],
+		"/dashboard/groups": [~10,[4]],
+		"/dashboard/profile": [~11,[4]],
+		"/join-default-group": [~12,[5]],
+		"/login-01": [14],
+		"/login": [~13],
+		"/signout": [~15],
+		"/signup-success": [17],
+		"/signup": [~16]
 	};
 
 export const hooks = {

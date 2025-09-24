@@ -8,28 +8,20 @@ export const load = async ({ locals, url }: Parameters<LayoutServerLoad>[0]) => 
 		throw redirect(303, '/login');
 	}
 
-	// Skip onboarding checks for onboarding pages themselves
-	const isOnboardingPage = url.pathname.includes('/connect-telegram') || url.pathname.includes('/join-default-group');
+	console.log(`🔍 Dashboard access check for user ${locals.user.email} on path ${url.pathname}`);
 
-	// Admin bypass - admins don't need telegram or group membership
-	if (locals.user.admin) {
-		console.log(`✅ Admin user ${locals.user.email} bypassing onboarding checks`);
-		return { user: locals.user };
-	}
-
-	// Skip checks if user is on onboarding pages
-	if (isOnboardingPage) {
-		console.log(`🔄 User ${locals.user.email} on onboarding page, skipping checks`);
-		return { user: locals.user };
-	}
-
-	// Step 1: Check telegram connection
+	// Step 1: Check telegram connection (required for ALL users including admins)
 	if (!locals.user.telegram?.id) {
 		console.log(`🔄 User ${locals.user.email} missing telegram connection, redirecting to onboarding`);
-		throw redirect(303, '/dashboard/connect-telegram');
+		throw redirect(303, '/connect-telegram');
 	}
 
-	// Step 2: Check default group membership
+	// Step 2: Check default group membership (admins can bypass this)
+	if (locals.user.admin) {
+		console.log(`✅ Admin user ${locals.user.email} bypassing group membership check`);
+		return { user: locals.user };
+	}
+
 	try {
 		const response = await fetch(`${locals.pb.baseURL}/api/check-default-group`, {
 			headers: {
@@ -39,14 +31,14 @@ export const load = async ({ locals, url }: Parameters<LayoutServerLoad>[0]) => 
 
 		if (!response.ok) {
 			console.error(`❌ Error checking default group: ${response.status}`);
-			throw redirect(303, '/dashboard/join-default-group');
+			throw redirect(303, '/join-default-group');
 		}
 
 		const data = await response.json();
 
 		if (!data.inDefaultGroup) {
 			console.log(`🔄 User ${locals.user.email} not in default group (${data.reason}), redirecting to auto-join`);
-			throw redirect(303, '/dashboard/join-default-group');
+			throw redirect(303, '/join-default-group');
 		}
 
 		console.log(`✅ User ${locals.user.email} has full dashboard access`);
@@ -82,6 +74,6 @@ export const load = async ({ locals, url }: Parameters<LayoutServerLoad>[0]) => 
 		console.error(`❌ Error checking group membership for ${locals.user.email}:`, error);
 
 		// Fallback: redirect to join default group
-		throw redirect(303, '/dashboard/join-default-group');
+		throw redirect(303, '/join-default-group');
 	}
 };

@@ -70,7 +70,9 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			}
 
 			console.log(`✅ SUCCESS: Updated user ${userId} with Telegram ID: ${authData.id}`);
-			
+
+			// Auth refresh will happen automatically via realtime subscription
+
 			// Trigger auto-sync groups via bot API
 			console.log('🔄 Triggering group auto-sync...');
 			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT}`;

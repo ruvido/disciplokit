@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
 	// Ensure user is authenticated
 	if (!locals.user) {
 		throw redirect(303, '/login');
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Check if telegram is connected (required for this step)
 	if (!locals.user.telegram?.id) {
-		throw redirect(303, '/dashboard/connect-telegram');
+		throw redirect(303, '/connect-telegram');
 	}
 
 	// Check if already in default group
@@ -42,8 +43,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 };
 
-export const actions: Actions = {
-	default: async ({ locals }) => {
+export const actions = {
+	default: async ({ locals }: import('./$types').RequestEvent) => {
 		if (!locals.user) {
 			return {
 				success: false,
@@ -91,4 +92,4 @@ export const actions: Actions = {
 			};
 		}
 	}
-};
+};;null as any as Actions;

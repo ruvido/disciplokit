@@ -18,7 +18,8 @@ export default defineConfig(({ mode }) => {
 		envPrefix: 'PUBLIC_',
 		server: {
 			host: true,  // Permette connessioni esterne (localhost + VPS)
-			port: 3000
+			port: 3000,
+			allowedHosts: true  // Accetta tutti i domini
 		}
 	};
 });

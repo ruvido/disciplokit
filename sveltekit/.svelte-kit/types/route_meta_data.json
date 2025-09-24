@@ -4,8 +4,13 @@
 		"src/routes/+layout.server.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/admin": [
+		"src/routes/admin/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/admin/dashboard": [
 		"src/routes/admin/dashboard/+page.server.ts",
+		"src/routes/admin/+layout.server.ts",
 		"src/routes/+layout.server.ts"
 	],
 	"/api/invite-link/[groupId]": [
@@ -17,15 +22,17 @@
 	"/api/telegram-link": [
 		"src/routes/api/telegram-link/+server.ts"
 	],
+	"/connect-telegram": [
+		"src/routes/connect-telegram/+page.server.ts",
+		"src/routes/connect-telegram/+layout.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/connect-telegram/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/dashboard": [
 		"src/routes/dashboard/+page.server.ts",
 		"src/routes/dashboard/+layout.server.ts",
 		"src/routes/+layout.server.ts",
-		"src/routes/dashboard/+layout.server.ts",
-		"src/routes/+layout.server.ts"
-	],
-	"/dashboard/connect-telegram": [
-		"src/routes/dashboard/connect-telegram/+page.server.ts",
 		"src/routes/dashboard/+layout.server.ts",
 		"src/routes/+layout.server.ts"
 	],
@@ -34,14 +41,16 @@
 		"src/routes/dashboard/+layout.server.ts",
 		"src/routes/+layout.server.ts"
 	],
-	"/dashboard/join-default-group": [
-		"src/routes/dashboard/join-default-group/+page.server.ts",
-		"src/routes/dashboard/+layout.server.ts",
-		"src/routes/+layout.server.ts"
-	],
 	"/dashboard/profile": [
 		"src/routes/dashboard/profile/+page.server.ts",
 		"src/routes/dashboard/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/join-default-group": [
+		"src/routes/join-default-group/+page.server.ts",
+		"src/routes/join-default-group/+layout.server.ts",
+		"src/routes/+layout.server.ts",
+		"src/routes/join-default-group/+layout.server.ts",
 		"src/routes/+layout.server.ts"
 	],
 	"/login-01": [
