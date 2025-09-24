@@ -73,7 +73,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			
 			// Trigger auto-sync groups via bot API
 			console.log('🔄 Triggering group auto-sync...');
-			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT || 3030}`;
+			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT}`;
 			
 			try {
 				const syncResponse = await fetch(`${botUrl}/sync-user-groups`, {

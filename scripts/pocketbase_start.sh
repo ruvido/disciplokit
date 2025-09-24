@@ -41,7 +41,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     PLATFORM_PATTERN="pocketbase_darwin_*"
     BIND_ADDR="localhost:$PORT"
     echo "📱 Detected macOS"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+elif [[ "$OSTYPE" == "linux-"* ]]; then
     PLATFORM_PATTERN="pocketbase_linux_*"
     BIND_ADDR="0.0.0.0:$PORT"
     echo "🖥️  Detected Linux"
