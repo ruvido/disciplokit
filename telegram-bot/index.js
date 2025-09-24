@@ -9,7 +9,7 @@ console.log('🔧 Creando istanza Config...')
 const config = new Config()
 console.log('✅ Config istanziata, PocketBase connesso')
 
-const bot = new Telegraf('***REMOVED***')
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 
 console.log('🚀 Disciplo Telegram Bot Starting...')
 
