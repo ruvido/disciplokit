@@ -33,17 +33,9 @@ export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
     }
 
     try {
-        // Handle direct signup with token
-        if (type === 'direct' && token) {
-            console.log('Processing direct signup with token...');
-
-            // Validate token first
-            const tokenData = await validateToken(token, locals);
-
-            if (!tokenData) {
-                console.error('Invalid or expired token');
-                throw redirect(303, '/login?error=invalid_token');
-            }
+        // Handle direct signup (no token required)
+        if (type === 'direct') {
+            console.log('Processing direct signup...');
 
             // Load signup-direct config
             const response = await fetch(`${pocketbaseUrl}/api/signup?type=direct`);
@@ -52,28 +44,17 @@ export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
             }
 
             const signupConfig = await response.json();
-            const stepConfig = signupConfig.steps?.[0];
 
-            if (!stepConfig) {
-                throw new Error('Invalid direct signup configuration');
+            if (!signupConfig.steps?.length) {
+                throw new Error('Invalid direct signup configuration - no steps found');
             }
 
-            // Prepare prefill data
-            const prefillData = {
-                name: `${tokenData.telegram_first_name} ${tokenData.telegram_last_name || ''}`.trim()
-            };
-
-            console.log('Direct signup loaded with prefill:', prefillData);
+            console.log(`Direct signup loaded successfully with ${signupConfig.steps.length} steps`);
 
             return {
                 signupConfig,
-                stepConfig,
-                prefillData,
-                tokenData: {
-                    token,
-                    telegram_user_id: tokenData.telegram_user_id,
-                    group_name: tokenData.group_name
-                }
+                prefillData: null,
+                tokenData: null
             };
         }
 
@@ -180,36 +161,81 @@ export const actions = {
             let result;
 
             // DIRECT SIGNUP: Create member immediately
-            if (type === 'direct' && token) {
+            if (type === 'direct') {
                 console.log('Processing direct signup - creating member...');
 
-                // Validate token again (security)
-                const tokenData = await validateToken(token, locals);
-                if (!tokenData) {
-                    return fail(400, { error: 'Token non valido o scaduto' });
+                // Collect all form data (from multi-step client submission)
+                const allFormData: Record<string, any> = {};
+                
+                // Get all form fields
+                for (const [key, value] of formData.entries()) {
+                    if (key !== 'action') { // Skip action field
+                        allFormData[key] = value;
+                    }
+                }
+                
+                // Handle checkboxes (multiple values with same key)
+                const checkboxFields = ['hobbies', 'professional_skills'];
+                checkboxFields.forEach(field => {
+                    const values = formData.getAll(field);
+                    if (values.length > 0) {
+                        allFormData[field] = values;
+                    }
+                });
+
+                // Add passwordConfirm for PocketBase validation
+                if (allFormData.password) {
+                    allFormData.passwordConfirm = allFormData.password;
                 }
 
-                // Prepare member data with telegram info
-                const memberData = {
-                    ...stepData,
-                    telegram: {
-                        id: tokenData.telegram_user_id,
-                        first_name: tokenData.telegram_first_name,
-                        last_name: tokenData.telegram_last_name || "",
-                        username: tokenData.telegram_username || ""
-                    },
+                // Separate base member fields from extra data
+                const baseMemberFields = {
+                    email: allFormData.email,
+                    password: allFormData.password,
+                    passwordConfirm: allFormData.passwordConfirm,
+                    name: allFormData.name,
+                    telegram: null,
                     role: 'member',
                     admin: false,
                     banned: false
                 };
 
+                // Put all extra signup data in the data field (except files and base fields)
+                const extraData = { ...allFormData };
+                // Remove base member fields (these go directly in member record)
+                delete extraData.email;
+                delete extraData.password;
+                delete extraData.passwordConfirm;
+                delete extraData.name;
+                delete extraData.telegram;
+                delete extraData.role;
+                delete extraData.admin;
+                delete extraData.banned;
+                delete extraData.profile_picture; // Files must be separate
+
+                // Prepare final member data
+                const memberData = {
+                    ...baseMemberFields,
+                    data: extraData
+                };
+
+                // Add file fields directly (not in data JSON)
+                if (allFormData.profile_picture) {
+                    memberData.avatar = allFormData.profile_picture; // Map to avatar field
+                }
+
                 console.log('Creating member with data:', memberData);
                 result = await locals.pb.collection('members').create(memberData);
 
-                // Mark token as used
-                await markTokenUsed(token, locals, result.id);
-
                 console.log(`✅ Member created successfully: ${result.id}`);
+
+                // Auto-login the new user (PocketBase official pattern)
+                await locals.pb.collection('members').authWithPassword(
+                    allFormData.email as string,
+                    allFormData.password as string
+                );
+
+                console.log(`✅ User auto-logged in successfully: ${result.email}`);
 
             } else {
                 // SIMPLE SIGNUP: Create signup request
