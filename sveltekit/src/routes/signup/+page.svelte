@@ -19,6 +19,31 @@
 	let loading = $state(false);
 	let stepErrors = $state<Record<string, string>>({});
 
+	// Initialize form data with empty values for all fields
+	$effect(() => {
+		if (data.signupConfig?.steps && Object.keys(allFormData).length === 0) {
+			const initialData: Record<string, any> = {};
+			
+			// Initialize all fields from all steps
+			data.signupConfig.steps.forEach(step => {
+				step.fields?.forEach(field => {
+					if (field.type === 'checkbox') {
+						initialData[field.name] = [];
+					} else {
+						initialData[field.name] = '';
+					}
+				});
+			});
+			
+			// Apply prefill data if available
+			if (data.prefillData) {
+				Object.assign(initialData, data.prefillData);
+			}
+			
+			allFormData = initialData;
+		}
+	});
+
 	// Derived values from config (NO hardcoding!)
 	const currentStep = $derived(data.signupConfig?.steps?.[currentStepIndex]);
 	const totalSteps = $derived(data.signupConfig?.steps?.length || 1);
@@ -45,6 +70,7 @@
 
 	// Step navigation functions
 	function nextStep() {
+		// Only validate when going forward
 		if (!validateCurrentStep()) return;
 		
 		if (currentStepIndex < totalSteps - 1) {
@@ -54,6 +80,7 @@
 	}
 
 	function prevStep() {
+		// No validation when going back - just navigate
 		if (currentStepIndex > 0) {
 			currentStepIndex--;
 			stepErrors = {}; // Clear errors when moving back
@@ -109,15 +136,7 @@
 		return isValid;
 	}
 
-	// Handle form field changes
-	function handleFieldChange(fieldName: string, value: any) {
-		allFormData[fieldName] = value;
-		// Clear error for this field when user starts typing
-		if (stepErrors[fieldName]) {
-			stepErrors = { ...stepErrors };
-			delete stepErrors[fieldName];
-		}
-	}
+	// Form data is now handled directly via bind:value
 
 	// Note: Final submission now handled by use:enhance in the form
 </script>
@@ -145,10 +164,18 @@
 
 		<!-- Multi-Step Form (Official SvelteKit Pattern) -->
 		<div class="bg-white rounded-lg shadow-sm border p-8">
-			{#if currentStep?.fields}
+			{#if currentStep?.fields && Object.keys(allFormData).length > 0}
 				<form 
 					method="POST"
 					enctype="multipart/form-data"
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+							if (!isLastStep) {
+								nextStep();
+							}
+						}
+					}}
 					use:enhance={({ formData, cancel }) => {
 						loading = true;
 						
@@ -223,13 +250,14 @@
 					<!-- Form Fields -->
 					<div class="space-y-6">
 						{#each currentStep.fields as field}
-							<FieldRenderer
-								field={field}
-								value={formData[field.name]}
-								error={stepErrors[field.name]}
-								disabled={loading}
-								onchange={(value) => handleFieldChange(field.name, value)}
-							/>
+							{#if allFormData[field.name] !== undefined}
+								<FieldRenderer
+									field={field}
+									bind:value={allFormData[field.name]}
+									error={stepErrors[field.name]}
+									disabled={loading}
+								/>
+							{/if}
 						{/each}
 
 						{#if stepErrors._form}
@@ -246,15 +274,18 @@
 
 						<!-- Navigation Buttons (Official SvelteKit Pattern) -->
 						<div class="flex justify-between pt-6">
-							<button
-								type="submit"
-								name="action"
-								value="prev"
-								disabled={isFirstStep || loading}
-								class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-							>
-								Indietro
-							</button>
+							{#if !isFirstStep}
+								<button
+									type="button"
+									onclick={() => prevStep()}
+									disabled={loading}
+									class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									Indietro
+								</button>
+							{:else}
+								<div></div>
+							{/if}
 
 							{#if isLastStep}
 								<button
@@ -268,9 +299,8 @@
 								</button>
 							{:else}
 								<button
-									type="submit"
-									name="action"
-									value="next"
+									type="button"
+									onclick={() => nextStep()}
 									disabled={loading}
 									class="px-6 py-2 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 disabled:opacity-50"
 								>

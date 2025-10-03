@@ -18,13 +18,11 @@
 		value?: any;
 		error?: string;
 		disabled?: boolean;
-		onchange?: (value: any) => void;
 	}
 	
-	let { field, value = '', error, disabled = false, onchange }: Props = $props();
+	let { field, value = $bindable(''), error, disabled = false }: Props = $props();
 	
-	// Simple value handling
-	let displayValue = $state(value || '');
+	// Direct binding - no complex state management needed
 
 	// Autocomplete mapping for better UX
 	function getAutocomplete(fieldName: string, fieldType: string): string {
@@ -55,15 +53,10 @@
 			name={field.name}
 			type={field.type}
 			placeholder={field.placeholder}
-			value={displayValue}
+			bind:value
 			required={field.required}
 			disabled={disabled}
 			autocomplete={getAutocomplete(field.name, field.type)}
-			oninput={(e) => {
-				const target = e.target as HTMLInputElement;
-				displayValue = target.value;
-				onchange?.(target.value);
-			}}
 		/>
 	{:else if field.type === 'number'}
 		<Input
@@ -71,17 +64,12 @@
 			name={field.name}
 			type="number"
 			placeholder={field.placeholder}
-			value={displayValue}
+			bind:value
 			min={field.min}
 			max={field.max}
 			required={field.required}
 			disabled={disabled}
 			autocomplete={getAutocomplete(field.name, field.type)}
-			oninput={(e) => {
-				const target = e.target as HTMLInputElement;
-				displayValue = target.value;
-				onchange?.(target.value);
-			}}
 		/>
 	{:else if field.type === 'password'}
 		<Input
@@ -89,28 +77,20 @@
 			name={field.name}
 			type="password"
 			placeholder={field.placeholder}
+			bind:value
 			required={field.required}
 			disabled={disabled}
 			autocomplete={getAutocomplete(field.name, field.type)}
-			oninput={(e) => {
-				const target = e.target as HTMLInputElement;
-				onchange?.(target.value);
-			}}
 		/>
 	{:else if field.type === 'date'}
 		<Input
 			id={field.name}
 			name={field.name}
 			type="date"
-			value={displayValue}
+			bind:value
 			required={field.required}
 			disabled={disabled}
 			autocomplete={getAutocomplete(field.name, field.type)}
-			oninput={(e) => {
-				const target = e.target as HTMLInputElement;
-				displayValue = target.value;
-				onchange?.(target.value);
-			}}
 		/>
 	{:else if field.type === 'select'}
 		<select
@@ -119,15 +99,11 @@
 			required={field.required}
 			disabled={disabled}
 			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			onchange={(e) => {
-				const target = e.target as HTMLSelectElement;
-				displayValue = target.value;
-				onchange?.(target.value);
-			}}
+			bind:value
 		>
-			<option value="">Seleziona {field.label.toLowerCase()}</option>
+			<option value="" disabled>Seleziona {field.label.toLowerCase()}</option>
 			{#each field.options || [] as option}
-				<option value={option} selected={displayValue === option}>
+				<option value={option}>
 					{option}
 				</option>
 			{/each}
@@ -142,15 +118,11 @@
 			maxlength={field.maxLength}
 			rows="4"
 			class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-			oninput={(e) => {
-				const target = e.target as HTMLTextAreaElement;
-				displayValue = target.value;
-				onchange?.(target.value);
-			}}
-		>{displayValue}</textarea>
+			bind:value
+		></textarea>
 		{#if field.maxLength}
 			<p class="text-xs text-muted-foreground">
-				{(displayValue?.length || 0)}/{field.maxLength} caratteri
+				{(value?.length || 0)}/{field.maxLength} caratteri
 			</p>
 		{/if}
 	{:else if field.type === 'checkbox'}
@@ -178,7 +150,7 @@
 									currentValues.splice(index, 1);
 								}
 							}
-							onchange?.(currentValues);
+							value = currentValues;
 						}}
 					/>
 					<label 
@@ -202,7 +174,7 @@
 			onchange={(e) => {
 				const target = e.target as HTMLInputElement;
 				const file = target.files?.[0];
-				onchange?.(file);
+				value = file;
 			}}
 		/>
 		{#if field.maxSize}

@@ -28,7 +28,6 @@
 declare module '$env/static/private' {
 	export const SHELL: string;
 	export const npm_command: string;
-	export const COREPACK_ENABLE_AUTO_PIN: string;
 	export const COLORTERM: string;
 	export const CHARSET: string;
 	export const I3SOCK: string;
@@ -42,8 +41,6 @@ declare module '$env/static/private' {
 	export const PWD: string;
 	export const LOGNAME: string;
 	export const XDG_SESSION_TYPE: string;
-	export const _: string;
-	export const CLAUDECODE: string;
 	export const HOME: string;
 	export const LANG: string;
 	export const npm_package_version: string;
@@ -57,15 +54,12 @@ declare module '$env/static/private' {
 	export const DISPLAY: string;
 	export const npm_lifecycle_event: string;
 	export const SHLVL: string;
-	export const GIT_EDITOR: string;
 	export const PAGER: string;
 	export const XDG_VTNR: string;
 	export const XDG_SESSION_ID: string;
 	export const npm_config_user_agent: string;
-	export const OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 	export const npm_execpath: string;
 	export const XDG_RUNTIME_DIR: string;
-	export const CLAUDE_CODE_ENTRYPOINT: string;
 	export const npm_package_json: string;
 	export const BUN_INSTALL: string;
 	export const LC_COLLATE: string;
@@ -74,6 +68,7 @@ declare module '$env/static/private' {
 	export const DBUS_SESSION_BUS_ADDRESS: string;
 	export const npm_node_execpath: string;
 	export const OLDPWD: string;
+	export const _: string;
 	export const NODE_ENV: string;
 }
 
@@ -106,7 +101,6 @@ declare module '$env/dynamic/private' {
 	export const env: {
 		SHELL: string;
 		npm_command: string;
-		COREPACK_ENABLE_AUTO_PIN: string;
 		COLORTERM: string;
 		CHARSET: string;
 		I3SOCK: string;
@@ -120,8 +114,6 @@ declare module '$env/dynamic/private' {
 		PWD: string;
 		LOGNAME: string;
 		XDG_SESSION_TYPE: string;
-		_: string;
-		CLAUDECODE: string;
 		HOME: string;
 		LANG: string;
 		npm_package_version: string;
@@ -135,15 +127,12 @@ declare module '$env/dynamic/private' {
 		DISPLAY: string;
 		npm_lifecycle_event: string;
 		SHLVL: string;
-		GIT_EDITOR: string;
 		PAGER: string;
 		XDG_VTNR: string;
 		XDG_SESSION_ID: string;
 		npm_config_user_agent: string;
-		OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 		npm_execpath: string;
 		XDG_RUNTIME_DIR: string;
-		CLAUDE_CODE_ENTRYPOINT: string;
 		npm_package_json: string;
 		BUN_INSTALL: string;
 		LC_COLLATE: string;
@@ -152,6 +141,7 @@ declare module '$env/dynamic/private' {
 		DBUS_SESSION_BUS_ADDRESS: string;
 		npm_node_execpath: string;
 		OLDPWD: string;
+		_: string;
 		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
