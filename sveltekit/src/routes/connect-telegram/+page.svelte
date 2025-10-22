@@ -164,9 +164,11 @@
 
 		<!-- Skip Option -->
 		<div class="text-center">
-			<Button variant="ghost" size="sm" href="/signout">
-				Not now, sign out
-			</Button>
+			<form method="POST" action="/signout">
+				<Button variant="ghost" size="sm" type="submit">
+					Not now, sign out
+				</Button>
+			</form>
 		</div>
 	</div>
 </div>

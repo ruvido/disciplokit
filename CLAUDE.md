@@ -142,6 +142,7 @@ Sistema simile a MightyNetworks/Circle ma specifico per Telegram.
 - [ ] **CI/CD Pipeline**: Setup automatico build/deploy separato dev/prod
 - [ ] **Performance**: Implementare SSG per pagine statiche
 - [ ] **Monitoring**: Aggiungere health checks e logging produzione
+- [ ] Update README (at the moment it is outdated)
 
 ## Best Practices
 - **MAI hardcoded variables!** → fail-fast validation obbligatoria
