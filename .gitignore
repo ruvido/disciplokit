@@ -4,3 +4,18 @@ pocketbase/pocketbase*
 pb_data
 *.bak
 node_modules
+
+# SvelteKit generated files
+sveltekit/.svelte-kit/
+sveltekit/build/
+sveltekit/dist/
+sveltekit/.vercel/
+sveltekit/.netlify/
+
+# Logs
+*.log
+logs
+
+# OS
+.DS_Store
+Thumbs.db
