@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
+export const POST: RequestHandler = async ({ request, locals, fetch }) => {
 	const timestamp = new Date().toISOString();
 	const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 	const userAgent = request.headers.get('user-agent') || 'unknown';
@@ -18,22 +18,14 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			hash_present: !!authData.hash
 		});
 
-		// Get current user from cookie
-		const authCookie = cookies.get('pb_auth');
-		if (!authCookie) {
-			console.error('❌ No PocketBase auth cookie');
+		// Get current user from locals (populated by hooks.server.ts - official SvelteKit pattern)
+		if (!locals.user) {
+			console.error('❌ User not authenticated');
 			return json({ success: false, error: 'Not authenticated' }, { status: 401 });
 		}
 
-		// Parse auth cookie to get user ID
-		const authInfo = JSON.parse(authCookie);
-		if (!authInfo.record) {
-			console.error('❌ No user record in auth cookie');
-			return json({ success: false, error: 'User not found' }, { status: 401 });
-		}
-
-		const userId = authInfo.record.id;
-		console.log(`👤 Found authenticated user: ${userId} (${authInfo.record.email || 'no email'})`);
+		const userId = locals.user.id;
+		console.log(`👤 Found authenticated user: ${userId} (${locals.user.email || 'no email'})`);
 
 		// Call PocketBase custom endpoint - server-side processing
 		const pocketbaseUrl = process.env.POCKETBASE_URL;
@@ -76,7 +68,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 			// Trigger auto-sync groups via bot API
 			console.log('🔄 Triggering group auto-sync...');
 			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT}`;
-			
+
 			try {
 				const syncResponse = await fetch(`${botUrl}/sync-user-groups`, {
 					method: 'POST',
@@ -88,15 +80,15 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 						telegram_id: authData.id
 					})
 				});
-				
+
 				const syncResult = await syncResponse.json();
 				console.log(`🔄 Group sync result:`, syncResult);
-				
+
 				if (syncResult.success) {
 					console.log(`✅ User auto-synced to ${syncResult.groups_added.length} groups`);
 				}
-				
-			} catch (syncError) {
+
+			} catch (syncError: any) {
 				console.error('⚠️  Group sync failed (non-critical):', syncError.message);
 				// Continue anyway - sync failure shouldn't break linking
 			}
