@@ -2,6 +2,7 @@
 	import { enhance, applyAction } from '$app/forms';
 	import FieldRenderer from '$lib/components/FieldRenderer.svelte';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import LoadingSpinner from '$lib/components/loading-spinner.svelte';
 	import type { PageData, ActionData } from './$types';
 	import { pb } from '$lib/pocketbase';
 	import { goto } from '$app/navigation';
@@ -18,6 +19,29 @@
 	let allFormData = $state<Record<string, any>>({});
 	let loading = $state(false);
 	let stepErrors = $state<Record<string, string>>({});
+	
+	// Loading state for configuration
+	let isConfigLoading = $state(true);
+	let hasTimedOut = $state(false);
+
+	// Handle config loading timeout
+	$effect(() => {
+		// Set timeout for configuration loading
+		const timeout = setTimeout(() => {
+			if (isConfigLoading && !data.signupConfig?.steps) {
+				hasTimedOut = true;
+				isConfigLoading = false;
+			}
+		}, 8000); // 8 second timeout
+
+		// If config is loaded, clear loading state
+		if (data.signupConfig?.steps) {
+			isConfigLoading = false;
+			clearTimeout(timeout);
+		}
+
+		return () => clearTimeout(timeout);
+	});
 
 	// Initialize form data with empty values for all fields
 	$effect(() => {
@@ -310,6 +334,8 @@
 						</div>
 					</div>
 				</form>
+			{:else if isConfigLoading && !hasTimedOut}
+				<LoadingSpinner message="" />
 			{:else}
 				<div class="text-center text-gray-500">
 					<p>Configurazione del modulo non trovata.</p>
