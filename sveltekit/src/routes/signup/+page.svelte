@@ -16,57 +16,29 @@
 	
 	// Multi-step state management (Svelte 5 official patterns)
 	let currentStepIndex = $state(0);
-	let allFormData = $state<Record<string, any>>({});
 	let loading = $state(false);
 	let stepErrors = $state<Record<string, string>>({});
-	
-	// Loading state for configuration
-	let isConfigLoading = $state(true);
-	let hasTimedOut = $state(false);
 
-	// Handle config loading timeout
-	$effect(() => {
-		// Set timeout for configuration loading
-		const timeout = setTimeout(() => {
-			if (isConfigLoading && !data.signupConfig?.steps) {
-				hasTimedOut = true;
-				isConfigLoading = false;
-			}
-		}, 8000); // 8 second timeout
-
-		// If config is loaded, clear loading state
-		if (data.signupConfig?.steps) {
-			isConfigLoading = false;
-			clearTimeout(timeout);
-		}
-
-		return () => clearTimeout(timeout);
-	});
-
-	// Initialize form data with empty values for all fields
-	$effect(() => {
-		if (data.signupConfig?.steps && Object.keys(allFormData).length === 0) {
+	// Initialize form data synchronously to avoid race condition
+	let allFormData = $state<Record<string, any>>(
+		(() => {
 			const initialData: Record<string, any> = {};
-			
-			// Initialize all fields from all steps
-			data.signupConfig.steps.forEach(step => {
-				step.fields?.forEach(field => {
-					if (field.type === 'checkbox') {
-						initialData[field.name] = [];
-					} else {
-						initialData[field.name] = '';
-					}
+
+			if (data.signupConfig?.steps) {
+				data.signupConfig.steps.forEach(step => {
+					step.fields?.forEach(field => {
+						initialData[field.name] = field.type === 'checkbox' ? [] : '';
+					});
 				});
-			});
-			
-			// Apply prefill data if available
+			}
+
 			if (data.prefillData) {
 				Object.assign(initialData, data.prefillData);
 			}
-			
-			allFormData = initialData;
-		}
-	});
+
+			return initialData;
+		})()
+	);
 
 	// Derived values from config (NO hardcoding!)
 	const currentStep = $derived(data.signupConfig?.steps?.[currentStepIndex]);
@@ -188,7 +160,7 @@
 
 		<!-- Multi-Step Form (Official SvelteKit Pattern) -->
 		<div class="bg-white rounded-lg shadow-sm border p-8">
-			{#if currentStep?.fields && Object.keys(allFormData).length > 0}
+			{#if currentStep?.fields}
 				<form 
 					method="POST"
 					enctype="multipart/form-data"
@@ -274,14 +246,12 @@
 					<!-- Form Fields -->
 					<div class="space-y-6">
 						{#each currentStep.fields as field}
-							{#if allFormData[field.name] !== undefined}
-								<FieldRenderer
-									field={field}
-									bind:value={allFormData[field.name]}
-									error={stepErrors[field.name]}
-									disabled={loading}
-								/>
-							{/if}
+							<FieldRenderer
+								field={field}
+								bind:value={allFormData[field.name]}
+								error={stepErrors[field.name]}
+								disabled={loading}
+							/>
 						{/each}
 
 						{#if stepErrors._form}
@@ -334,12 +304,8 @@
 						</div>
 					</div>
 				</form>
-			{:else if isConfigLoading && !hasTimedOut}
-				<LoadingSpinner message="" />
 			{:else}
-				<div class="text-center text-gray-500">
-					<p>Configurazione del modulo non trovata.</p>
-				</div>
+				<LoadingSpinner message="Caricamento configurazione..." />
 			{/if}
 		</div>
 
