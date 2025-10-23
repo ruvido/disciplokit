@@ -63,11 +63,14 @@ export const POST: RequestHandler = async ({ request, locals, fetch }) => {
 
 			console.log(`✅ SUCCESS: Updated user ${userId} with Telegram ID: ${authData.id}`);
 
-			// Auth refresh will happen automatically via realtime subscription
+			// Refresh auth to update server-side session with new telegram data
+			console.log('🔄 Refreshing server-side auth session...');
+			await locals.pb.collection('members').authRefresh();
+			console.log('✅ Server-side session refreshed');
 
 			// Trigger auto-sync groups via bot API
 			console.log('🔄 Triggering group auto-sync...');
-			const botUrl = `http://${process.env.BOT_HOST || 'localhost'}:${process.env.BOT_PORT}`;
+			const botUrl = `http://localhost:${process.env.BOT_PORT}`;
 
 			try {
 				const syncResponse = await fetch(`${botUrl}/sync-user-groups`, {

@@ -86,7 +86,7 @@ File `.env` nel root del progetto condiviso da tutti i componenti con **fail-fas
 - **POCKETBASE_URL**: URL completo PocketBase per connessioni esterne
 - **POCKETBASE_ADMIN_EMAIL/PASSWORD**: Credenziali admin per setup iniziale
 - **TELEGRAM_LINK_SECRET**: Chiave HMAC per validazione token sicuri
-- **BOT_HOST/BOT_PORT**: Configurazione HTTP server bot
+- **BOT_PORT**: Porta HTTP server bot (localhost)
 - **BOT_WEBHOOK_SECRET**: Autenticazione webhook PocketBase → Bot
 
 ## Deploy Produzione (VPS)

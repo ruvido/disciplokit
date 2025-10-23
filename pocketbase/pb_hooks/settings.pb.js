@@ -7,25 +7,23 @@ onRecordUpdate((e) => {
         console.log('🔄 Telegram bot config updated, notifying bot...');
         
         // Get bot webhook configuration from environment
-        const botHost = $os.getenv('BOT_HOST');
-        const botPort = $os.getenv('BOT_PORT'); 
+        const botPort = $os.getenv('BOT_PORT');
         const botWebhookPath = $os.getenv('BOT_WEBHOOK_PATH');
         const botSecret = $os.getenv('BOT_WEBHOOK_SECRET');
-        
+
         // Fail fast if any required config is missing
-        if (!botHost || !botPort || !botWebhookPath || !botSecret) {
+        if (!botPort || !botWebhookPath || !botSecret) {
             console.error('❌ Bot webhook config incomplete - skipping notification');
             console.error('Missing:', {
-                BOT_HOST: !!botHost,
-                BOT_PORT: !!botPort, 
+                BOT_PORT: !!botPort,
                 BOT_WEBHOOK_PATH: !!botWebhookPath,
                 BOT_WEBHOOK_SECRET: !!botSecret
             });
             return;
         }
-        
+
         // Construct webhook URL
-        const webhookUrl = `http://${botHost}:${botPort}${botWebhookPath}`;
+        const webhookUrl = `http://localhost:${botPort}${botWebhookPath}`;
         console.log('📡 Calling bot webhook:', webhookUrl);
         
         try {

@@ -28,11 +28,8 @@
 			const result = await response.json();
 
 			if (result.success) {
-				console.log('✅ Telegram connection successful, redirecting after small delay...');
-				// Small delay to ensure session is updated, then redirect
-				setTimeout(() => {
-					window.location.href = '/dashboard';
-				}, 1000);
+				console.log('✅ Telegram connected, redirecting...');
+				window.location.href = '/dashboard';
 			} else {
 				error = result.error || 'Connection failed';
 				console.error('❌ Telegram connection failed:', result.error);
@@ -49,37 +46,10 @@
 	if (typeof window !== 'undefined') {
 		window.onTelegramAuth = onTelegramAuth;
 	}
-
-	// Setup realtime subscription
-	$effect(() => {
-		if (typeof window !== 'undefined' && data.user?.id) {
-			console.log('🔄 Setting up realtime subscription for user:', data.user.id);
-
-			pb.collection('members').subscribe(data.user.id, function(e) {
-				console.log('🔥 Realtime update received:', e.action, e.record);
-
-				if (e.action === 'update' && e.record.telegram?.id) {
-					console.log('✅ Telegram connected via realtime, redirecting...');
-					window.location.href = '/dashboard';
-				}
-			});
-
-			return () => {
-				pb.collection('members').unsubscribe();
-			};
-		}
-	});
 </script>
 
 <svelte:head>
 	<title>Connect Telegram - Disciplo</title>
-	<script async src="https://telegram.org/js/telegram-widget.js?22"></script>
-	<script>
-		window.onTelegramAuth = function(user) {
-			// This will be overridden by the Svelte component
-			console.log('Telegram auth received in head script:', user);
-		};
-	</script>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
