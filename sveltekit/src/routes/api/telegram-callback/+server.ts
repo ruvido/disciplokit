@@ -68,33 +68,20 @@ export const POST: RequestHandler = async ({ request, locals, fetch }) => {
 			await locals.pb.collection('members').authRefresh();
 			console.log('✅ Server-side session refreshed');
 
-			// Trigger auto-sync groups via bot API
-			console.log('🔄 Triggering group auto-sync...');
+			// Trigger auto-sync groups via bot API (fire-and-forget)
+			console.log('🔄 Triggering background group auto-sync...');
 			const botUrl = `http://localhost:${process.env.BOT_PORT}`;
 
-			try {
-				const syncResponse = await fetch(`${botUrl}/sync-user-groups`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						user_id: userId,
-						telegram_id: authData.id
-					})
-				});
-
-				const syncResult = await syncResponse.json();
-				console.log(`🔄 Group sync result:`, syncResult);
-
-				if (syncResult.success) {
-					console.log(`✅ User auto-synced to ${syncResult.groups_added.length} groups`);
-				}
-
-			} catch (syncError: any) {
-				console.error('⚠️  Group sync failed (non-critical):', syncError.message);
-				// Continue anyway - sync failure shouldn't break linking
-			}
+			fetch(`${botUrl}/sync-user-groups`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					user_id: userId,
+					telegram_id: authData.id
+				})
+			}).catch(err => console.error('⚠️ Background sync failed:', err.message));
 
 			return json({
 				success: true,

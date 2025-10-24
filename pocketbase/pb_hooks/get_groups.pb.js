@@ -51,14 +51,30 @@ routerAdd("POST", "/api/custom/get-groups", (e) => {
         const groupsData = []
         for (let i = 0; i < records.length; i++) {
             const record = records[i]
-            console.log("Processing record:", record.id, record.name)
+
+            // Get JSON data using official .string() method (PocketBase JSVM pattern)
+            let rawData = record.get('data');
+            let recordData = {};
+
+            if (rawData && typeof rawData.string === 'function') {
+                // Use .string() method for byte arrays
+                const jsonString = rawData.string();
+                recordData = JSON.parse(jsonString);
+            } else {
+                recordData = rawData || {};
+            }
+
+            const telegramId = recordData.telegram?.id;
+
+            console.log("Processing record:", record.id, record.get("name"), "telegram_id:", telegramId)
+
             groupsData.push({
                 id: record.id,
-                name: record.name,
-                data: record.data,
-                telegram_id: record.data?.telegram?.id,
-                created: record.created,
-                updated: record.updated
+                name: record.get("name"),
+                data: recordData,
+                telegram_id: telegramId,
+                created: record.get("created"),
+                updated: record.get("updated")
             })
         }
         

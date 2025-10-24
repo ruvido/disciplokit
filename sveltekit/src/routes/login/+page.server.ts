@@ -30,6 +30,22 @@ export const actions: Actions = {
                 passwordLength: password.length
             });
             await locals.pb.collection('members').authWithPassword(email, password);
+
+            // Trigger background group sync if user has telegram connected
+            const user = locals.pb.authStore.model;
+            if (user?.telegram?.id) {
+                // Fire-and-forget sync (no await - runs in background)
+                fetch(`http://localhost:${process.env.BOT_PORT}/sync-user-groups`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        telegram_id: user.telegram.id
+                    })
+                }).catch(err => console.error('⚠️ Background sync failed:', err.message));
+
+                console.log('🔄 Background group sync triggered for', user.email);
+            }
         } catch (err: any) {
             // Check for connection errors first (no status code)
             if (!err?.status) {

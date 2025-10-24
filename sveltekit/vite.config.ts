@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => {
 			'process.env.TELEGRAM_LINK_SECRET': JSON.stringify(env.TELEGRAM_LINK_SECRET || process.env.TELEGRAM_LINK_SECRET),
 			'process.env.HOST': JSON.stringify(env.HOST || process.env.HOST),
 			'process.env.POCKETBASE_PORT': JSON.stringify(env.POCKETBASE_PORT || process.env.POCKETBASE_PORT),
-			'process.env.POCKETBASE_URL': JSON.stringify(env.POCKETBASE_URL || process.env.POCKETBASE_URL)
+			'process.env.POCKETBASE_URL': JSON.stringify(env.POCKETBASE_URL || process.env.POCKETBASE_URL),
+			'process.env.BOT_PORT': JSON.stringify(env.BOT_PORT || process.env.BOT_PORT)
 		},
 		envPrefix: 'PUBLIC_',
 		server: {

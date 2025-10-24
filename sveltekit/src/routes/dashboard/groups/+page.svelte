@@ -50,9 +50,33 @@
 	<div class="container mx-auto p-4 max-w-4xl space-y-6">
 		<div class="flex items-center justify-between">
 			<h1 class="text-3xl font-bold">Groups</h1>
-			{#if data.user?.admin}
-				<Button href="/admin/groups/create">+ Create Group</Button>
-			{/if}
+			<div class="flex space-x-2">
+				{#if data.user?.telegram?.id}
+					<form
+						method="POST"
+						action="?/sync"
+						use:enhance={() => {
+							loading = 'sync';
+							return async ({ update }) => {
+								loading = null;
+								await update();
+							};
+						}}
+					>
+						<Button
+							type="submit"
+							variant="outline"
+							size="sm"
+							disabled={loading === 'sync'}
+						>
+							{loading === 'sync' ? 'Syncing...' : '↻ Sync Groups'}
+						</Button>
+					</form>
+				{/if}
+				{#if data.user?.admin}
+					<Button href="/admin/groups/create">+ Create Group</Button>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Success/Error Messages -->
@@ -133,54 +157,8 @@
 			</Card>
 		{/if}
 
-		<!-- Available Groups -->
-		{#if data.availableGroups && data.availableGroups.length > 0}
-			<Card>
-				<CardHeader>
-					<CardTitle>Available Groups</CardTitle>
-					<CardDescription>Groups you can request to join</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div class="space-y-4">
-						{#each data.availableGroups as group}
-							<div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-								<div class="flex-1">
-									<h3 class="font-medium">{group.name}</h3>
-									<p class="text-sm text-gray-600">{group.data?.description || 'No description available'}</p>
-									<p class="text-xs text-gray-500">
-										{group.data?.type === 'default' ? 'Default community group' : 'Community group'} •
-										Created {formatDate(group.created)}
-									</p>
-								</div>
-								<form
-									method="POST"
-									action="?/join"
-									use:enhance={() => {
-										loading = group.id;
-										return async ({ update }) => {
-											loading = null;
-											await update();
-										};
-									}}
-								>
-									<input type="hidden" name="groupId" value={group.id} />
-									<Button
-										type="submit"
-										size="sm"
-										disabled={loading === group.id}
-									>
-										{loading === group.id ? 'Requesting...' : 'Request Join'}
-									</Button>
-								</form>
-							</div>
-						{/each}
-					</div>
-				</CardContent>
-			</Card>
-		{/if}
-
 		<!-- Empty States -->
-		{#if (!data.userGroups || data.userGroups.length === 0) && (!data.availableGroups || data.availableGroups.length === 0)}
+		{#if !data.userGroups || data.userGroups.length === 0}
 			<Card>
 				<CardContent class="text-center py-12">
 					<div class="space-y-4">
@@ -200,7 +178,7 @@
 
 		<!-- Stats -->
 		<div class="text-sm text-gray-600 text-center space-y-1">
-			<p>Your groups: {data.userGroups?.length || 0} | Available to join: {data.availableGroups?.length || 0}</p>
+			<p>Your groups: {data.userGroups?.length || 0}</p>
 			{#if data.user?.telegram?.name}
 				<p>Connected to Telegram as: <strong>{data.user.telegram.name}</strong></p>
 			{/if}
