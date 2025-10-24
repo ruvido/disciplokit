@@ -7,6 +7,7 @@ migrate((app) => {
     const smtpUsername = $os.getenv("SMTP_USERNAME")
     const smtpPassword = $os.getenv("SMTP_PASSWORD")
     const smtpFrom = $os.getenv("SMTP_FROM")
+    const appName = $os.getenv("APP_NAME")
 
     const missing = []
     if (!smtpHost) missing.push("SMTP_HOST")
@@ -33,7 +34,7 @@ migrate((app) => {
         settings.meta.senderName = fromMatch[1].trim()
         settings.meta.senderAddress = fromMatch[2].trim()
     } else {
-        settings.meta.senderName = "DisciploKit"
+        settings.meta.senderName = appName || "DisciploKit"
         settings.meta.senderAddress = smtpFrom
     }
 

@@ -28,7 +28,7 @@
 <!-- Responsive Header -->
 <header class="bg-background border-b sticky top-0 z-50">
 	<div class="flex items-center justify-between p-4">
-		<h1 class="text-xl font-bold text-primary">DisciploKit</h1>
+		<h1 class="text-xl font-bold text-primary">{process.env.APP_NAME || 'DisciploKit'}</h1>
 		
 		<!-- Desktop Navigation - visible on md and up -->
 		<nav class="hidden md:flex items-center gap-6">
